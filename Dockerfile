@@ -1,6 +1,11 @@
-FROM ubuntu;
+FROM node:20-alpine
 
-WORKDIR /app
+WORKDIR /usr/src/app
 
-COPY /. /app/
+COPY package*.json /.
 
+COPY . .
+
+RUN npm install
+
+CMD [ "node", "src/server.js" ]
