@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { connectDBs } = require("./db");
+const { connectDBs } = require("./DBconncetions");
 
 const Schema = mongoose.Schema;
 

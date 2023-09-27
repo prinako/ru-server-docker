@@ -116,14 +116,10 @@ async function getCardapioFormatToVerify(dados, next) {
 
 module.exports = {
   postCardapio,
-  // todosOsReclameAqui,
   todosOsCardapio,
   findCardapioByDate,
-  // crioReclamaAqui,
-  // crioFeedback,
   updateCardapio,
   dropCollection,
-  // postUsersTokens,
   getAllUsersTokens,
   formatCardapioFroDatabase,
   getCardapioFormatToVerify,

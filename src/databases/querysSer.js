@@ -1,11 +1,9 @@
 const {
-  CardapioH,
   CardapioSer,
-  UsersTokensH,
   UsersTokensSer,
 } = require("./schema");
 
-async function formatCardapioFroDatabase(dados, next) {
+async function formatCardapioFroDatabaseSer(dados, next) {
   const novoCadapio = {
     dia: dados.dia[0],
     data: dados.dia[1],
@@ -37,9 +35,9 @@ async function formatCardapioFroDatabase(dados, next) {
   return next(novoCadapio);
 }
 
-async function postCardapio(dados, next) {
-  formatCardapioFroDatabase(dados, async (novoCadapio) => {
-    const d = new CardapioH(novoCadapio);
+async function postCardapioSer(dados, next) {
+  formatCardapioFroDatabaseSer(dados, async (novoCadapio) => {
+    const d = new CardapioSer(novoCadapio);
     await d
       .save()
       .then(async (resolute) => {
@@ -54,9 +52,9 @@ async function connectMongoDBserver(dados) {
   console.log(`we wii connect soon: ` + dados);
 }
 
-async function updateCardapio(dados) {
-  formatCardapioFroDatabase(dados, async (novoCadapio) => {
-    await CardapioH.findOneAndUpdate({ data: dados.dia[1] }, novoCadapio, {
+async function updateCardapioSer(dados) {
+  formatCardapioFroDatabaseSer(dados, async (novoCadapio) => {
+    await CardapioSer.findOneAndUpdate({ data: dados.dia[1] }, novoCadapio, {
       upsert: true,
     })
       .then()
@@ -73,31 +71,31 @@ async function updateCardapio(dados) {
 
 }
 
-async function todosOsCardapio(next) {
-  const rs = await CardapioH.find().clone();
+async function todosOsCardapioSer(next) {
+  const rs = await CardapioSer.find().clone();
   return next(rs);
 }
 
-async function findCardapioByDate(data, next) {
-  const cardapio = await CardapioH.findOne({ data: data });
+async function findCardapioByDateSer(data, next) {
+  const cardapio = await CardapioSer.findOne({ data: data });
   return next(cardapio);
 }
 
-async function getAllUsersTokens(next) {
+async function getAllUsersTokensSer(next) {
   allTokens = [];
-  const rs = await UsersTokensH.find().clone();
+  const rs = await UsersTokensSer.find().clone();
   rs.forEach((tk) => allTokens.push(tk.token));
   // console.log(allTokens);
   return next(allTokens);
 }
 
-async function dropCollection(next) {
+async function dropCollectionSer(next) {
   // verify collection if new cardápio has ben added or not.
   const toBeVerified = await todosOsCardpio((e) => e);
   // const isToBeDrop = toBeVerified.length;
   // console.log(isToBeDrop);
 
-  await CardapioH.collection
+  await CardapioSer.collection
     .drop()
     .then((e) => next(true))
     .catch((err) => {
@@ -107,24 +105,20 @@ async function dropCollection(next) {
 
 }
 
-async function getCardapioFormatToVerify(dados, next) {
-  await formatCardapioFroDatabase(dados, (cardapioFormatado) => {
+async function getCardapioFormatToVerifySer(dados, next) {
+  await formatCardapioFroDatabaseSer(dados, (cardapioFormatado) => {
     return next(cardapioFormatado);
   });
 }
 
 
 module.exports = {
-  postCardapio,
-  // todosOsReclameAqui,
-  todosOsCardapio,
-  findCardapioByDate,
-  // crioReclamaAqui,
-  // crioFeedback,
-  updateCardapio,
-  dropCollection,
-  // postUsersTokens,
-  getAllUsersTokens,
-  formatCardapioFroDatabase,
-  getCardapioFormatToVerify,
+  postCardapioSer,
+  todosOsCardapioSer,
+  findCardapioByDateSer,
+  updateCardapioSer,
+  dropCollectionSer,
+  getAllUsersTokensSer,
+  formatCardapioFroDatabaseSer,
+  getCardapioFormatToVerifySer,
 };
