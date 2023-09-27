@@ -1,10 +1,12 @@
+// Importa os modelos do Mongoose ou esquemas (presumivelmente 
+// definidos em "schema.js")
 const {
   CardapioH,
-  CardapioSer,
   UsersTokensH,
-  UsersTokensSer,
 } = require("./schema");
 
+
+// Formata os dados do cardápio para um novo formato
 async function formatCardapioFroDatabase(dados, next) {
   const novoCadapio = {
     dia: dados.dia[0],
@@ -37,6 +39,7 @@ async function formatCardapioFroDatabase(dados, next) {
   return next(novoCadapio);
 }
 
+// Função para adicionar um novo cardápio
 async function postCardapio(dados, next) {
   formatCardapioFroDatabase(dados, async (novoCadapio) => {
     const d = new CardapioH(novoCadapio);
@@ -50,10 +53,13 @@ async function postCardapio(dados, next) {
   });
 }
 
+// Função fictícia para conectar-se ao servidor MongoDB 
+// (precisa ser implementada)
 async function connectMongoDBserver(dados) {
   console.log(`we wii connect soon: ` + dados);
 }
 
+// Função para atualizar um cardápio existente
 async function updateCardapio(dados) {
   formatCardapioFroDatabase(dados, async (novoCadapio) => {
     await CardapioH.findOneAndUpdate({ data: dados.dia[1] }, novoCadapio, {
@@ -73,16 +79,19 @@ async function updateCardapio(dados) {
 
 }
 
+// Função para obter todos os cardápios
 async function todosOsCardapio(next) {
   const rs = await CardapioH.find().clone();
   return next(rs);
 }
 
+// Função para encontrar um cardápio com base na data
 async function findCardapioByDate(data, next) {
   const cardapio = await CardapioH.findOne({ data: data });
   return next(cardapio);
 }
 
+// Função para obter todos os tokens de usuário
 async function getAllUsersTokens(next) {
   allTokens = [];
   const rs = await UsersTokensH.find().clone();
@@ -91,11 +100,10 @@ async function getAllUsersTokens(next) {
   return next(allTokens);
 }
 
+// Função para excluir a coleção de cardápios
 async function dropCollection(next) {
   // verify collection if new cardápio has ben added or not.
   const toBeVerified = await todosOsCardpio((e) => e);
-  // const isToBeDrop = toBeVerified.length;
-  // console.log(isToBeDrop);
 
   await CardapioH.collection
     .drop()
@@ -107,13 +115,14 @@ async function dropCollection(next) {
 
 }
 
+// Função para obter o formato do cardápio para verificação
 async function getCardapioFormatToVerify(dados, next) {
   await formatCardapioFroDatabase(dados, (cardapioFormatado) => {
     return next(cardapioFormatado);
   });
 }
 
-
+// Exporta as funções como módulo
 module.exports = {
   postCardapio,
   todosOsCardapio,

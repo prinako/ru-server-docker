@@ -7,9 +7,9 @@ const mongooseOptions = {useUnifiedTopology: true, }
 
 const connectDBs = () =>{
     try{
-        const homeDB = mongoose.createConnection(homeDB_Url, mongooseOptions)
+        const homeDB =  mongoose.createConnection(homeDB_Url, mongooseOptions)
         const serverDB = mongoose.createConnection(serverDB_Url, mongooseOptions)
-        console.log("trying monogose")
+        console.log("monogose is online");
         return {homeDB, serverDB}
     }catch(err){
         console.log(`Error: :${err.message}`)

@@ -50,7 +50,7 @@ router.post("/token", async (req, res) => {
   res.send("ok");
 });
 
-router.post("/drop", async (req, res) => {
+async function dropDatabase(){
   await dropCollection((e) => {
     // console.log(e);
     if (e) {
@@ -62,7 +62,7 @@ router.post("/drop", async (req, res) => {
       res.send(e);
     }
   });
-});
+};
 
 async function checkForUpdate(){
   //for today date
@@ -108,4 +108,4 @@ function main() {
   return;
 }
 
-module.exports = { main, router, checkForUpdate};
+module.exports = { main, router, checkForUpdate, dropDatabase};

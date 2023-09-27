@@ -1,6 +1,7 @@
 // Importe a função isEqual da biblioteca lodash e
 // a função findCardapioByDate de um módulo de banco de dados.
 const isEqual = require("lodash/isEqual");
+
 const { findCardapioByDate } = require("../databases/querys");
 
 // Defina uma função assíncrona chamada isItNeedToNotify.

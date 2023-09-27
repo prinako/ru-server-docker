@@ -1,6 +1,6 @@
 require("dotenv");
 const FCM = require("fcm-node");
-const { getAllUsersTokens } = require("../databases/querys");
+const { getAllUsersTokensSer } = require("../databases/querysSer");
 
 const serverKey = process.env.SERVERKEY;
 
@@ -9,7 +9,7 @@ const fcm = new FCM(serverKey);
 // get all users tokens
 
 async function notifyUserCardapioDeHojeMudou({ almoco, jantar }) {
-  const userToken = await getAllUsersTokens((d) => d);
+  const userToken = await getAllUsersTokensSer((d) => d);
   // console.log(userToken);
 
   if ((almoco.isAlmocoNeed && jantar.isJantarNeed)) {
