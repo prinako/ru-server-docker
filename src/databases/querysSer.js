@@ -91,7 +91,6 @@ async function getAllUsersTokensSer(next) {
 
 async function dropCollectionSer(next) {
   // verify collection if new cardápio has ben added or not.
-  const toBeVerified = await todosOsCardpio((e) => e);
   // const isToBeDrop = toBeVerified.length;
   // console.log(isToBeDrop);
 
@@ -110,7 +109,6 @@ async function getCardapioFormatToVerifySer(dados, next) {
     return next(cardapioFormatado);
   });
 }
-
 
 module.exports = {
   postCardapioSer,

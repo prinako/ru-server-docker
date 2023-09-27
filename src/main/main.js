@@ -13,29 +13,37 @@ const {
 
 const { getAllCardapio } = require("../cardapio/getCardapio");
 
-// Importa um módulo relacionado ao envio de notificações push. 
+// Importa um módulo relacionado ao envio de notificações push.
 const {
   notifyUserCardapioDeHojeMudou,
   novoCardapioDaSemana,
 } = require("../firebase/push-notification");
 
 // Importa um módulo para atualiza o servidor do mongodb.
-const { isNeedToUpdateMongoDbSer } = require("./updateMongoDB");
+const {
+  isNeedToUpdateMongoDbSer,
+  isNeedToDropDatabase,
+} = require("./updateMongoDB");
 
 //=============================///
 //main functions
 async function dropDatabase() {
-  await dropCollection((e) => {
-    // console.log(e);
-    if (e) {
-      main();
-      // notify all users
-      novoCardapioDaSemana();
-      return res.send(e);
-    } else {
-      res.send(e);
-    }
-  });
+  const todosOsCar = await todosOsCardapio((duc) => duc);
+
+  if (todosOsCar.length > 5) {
+    await dropCollection(async (e) => {
+      // console.log(e);
+      if (e) {
+        main();
+        await isNeedToDropDatabase();
+        // notify all users
+        await novoCardapioDaSemana();
+        return;
+      } else {
+        console.log(e);
+      }
+    });
+  }
 }
 
 async function checkForUpdate() {
@@ -44,6 +52,8 @@ async function checkForUpdate() {
   const toDayDate = `${date.getDate()}-0${
     date.getMonth() + 1
   }-${date.getFullYear()}`;
+
+  await dropDatabase();
 
   const cardapioDeHoje = await findCardapioByDate(toDayDate, (e) => e);
   //  console.log(cardapioDeHoje);
@@ -66,15 +76,9 @@ async function checkForUpdate() {
 
 async function doUpdate(callback) {
   console.log("go");
-  // const date = new Date();
-  // console.log(`${date.getDate() + 1}-0${
-  //   date.getMonth() + 1
-  // }-${date.getFullYear()}`);
 
   await getAllCardapio(async (next) => {
-    await updateCardapio(next, (e) => {
-      console.log(e);
-    });
+    await updateCardapio(next);
   });
   return callback();
 }
