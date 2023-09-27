@@ -1,10 +1,6 @@
-// Importa os modelos do Mongoose ou esquemas (presumivelmente 
+// Importa os modelos do Mongoose ou esquemas (presumivelmente
 // definidos em "schema.js")
-const {
-  CardapioH,
-  UsersTokensH,
-} = require("./schema");
-
+const { CardapioH, UsersTokensH } = require("./schema");
 
 // Formata os dados do cardápio para um novo formato
 async function formatCardapioFroDatabase(dados, next) {
@@ -53,7 +49,7 @@ async function postCardapio(dados, next) {
   });
 }
 
-// Função fictícia para conectar-se ao servidor MongoDB 
+// Função fictícia para conectar-se ao servidor MongoDB
 // (precisa ser implementada)
 async function connectMongoDBserver(dados) {
   console.log(`we wii connect soon: ` + dados);
@@ -76,7 +72,6 @@ async function updateCardapio(dados) {
     // .clone();
     return;
   });
-
 }
 
 // Função para obter todos os cardápios
@@ -103,7 +98,7 @@ async function getAllUsersTokens(next) {
 // Função para excluir a coleção de cardápios
 async function dropCollection(next) {
   // verify collection if new cardápio has ben added or not.
-  const toBeVerified = await todosOsCardpio((e) => e);
+  // const toBeVerified = await todosOsCardapio((e) => e);
 
   await CardapioH.collection
     .drop()
@@ -112,7 +107,6 @@ async function dropCollection(next) {
       console.error(err);
       return next(false);
     });
-
 }
 
 // Função para obter o formato do cardápio para verificação

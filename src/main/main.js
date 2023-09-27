@@ -2,53 +2,29 @@ const express = require("express");
 const router = express.Router();
 
 const { isItNeedToNotify } = require("../lodash/verifyIsEqual");
+
 const {
-  postCardapio,
-  todosOsCardapio,
-  dropCollection,
-  updateCardapio,
-  findCardapioByDate,
-  postUsersTokens,
+  postCardapio, // Função para adicionar um novo cardápio ao banco de dados.
+  todosOsCardapio, // Função para obter todos os cardápios do banco de dados.
+  dropCollection, // Função para excluir uma coleção (possivelmente no banco de dados).
+  updateCardapio, // Função para atualizar informações de um cardápio no banco de dados.
+  findCardapioByDate, // Função para buscar um cardápio com base em uma data específica.
 } = require("../databases/querys");
 
 const { getAllCardapio } = require("../cardapio/getCardapio");
+
+// Importa um módulo relacionado ao envio de notificações push. 
 const {
   notifyUserCardapioDeHojeMudou,
   novoCardapioDaSemana,
 } = require("../firebase/push-notification");
 
-router.get("/", async (req, res) => {
-  res.send("ok");
-});
+// Importa um módulo para atualiza o servidor do mongodb.
+const { isNeedToUpdateMongoDbSer } = require("./updateMongoDB");
 
-router.post("/new", async (req, res) => {
-  main();
-  res.send("ok");
-});
-
-router.get("/api", async (req, res) => {
-  const resolute = await todosOsCardapio((doc) => doc);
-  if (resolute.length > 5) {
-    await dropCollection((e) => {
-      if (e) {
-        main();
-        // notify all users
-        novoCardapioDaSemana();
-        return;
-      }
-    });
-  }
-  res.json(resolute);
-});
-
-router.post("/token", async (req, res) => {
-  await postUsersTokens(req, (next) => {
-    // console.log(next +1);
-  });
-  res.send("ok");
-});
-
-async function dropDatabase(){
+//=============================///
+//main functions
+async function dropDatabase() {
   await dropCollection((e) => {
     // console.log(e);
     if (e) {
@@ -60,9 +36,9 @@ async function dropDatabase(){
       res.send(e);
     }
   });
-};
+}
 
-async function checkForUpdate(){
+async function checkForUpdate() {
   //for today date
   const date = new Date();
   const toDayDate = `${date.getDate()}-0${
@@ -72,23 +48,29 @@ async function checkForUpdate(){
   const cardapioDeHoje = await findCardapioByDate(toDayDate, (e) => e);
   //  console.log(cardapioDeHoje);
 
-  await doUpdate(async (callback) => {
+  await doUpdate(async () => {
     await isItNeedToNotify(cardapioDeHoje, toDayDate, async (next) => {
-      //console.log(next);
-      await notifyUserCardapioDeHojeMudou({
-        almoco: next.almoco,
-        jantar: next.jantar,
-        nome: next.nomeDaRefei,
-      });
+      // console.log(next.almoco.isAlmocoNeed);
+      if (next.almoco.isAlmocoNeed || next.json.isJanterNeed) {
+        await notifyUserCardapioDeHojeMudou({
+          almoco: next.almoco,
+          jantar: next.jantar,
+          nome: next.nomeDaRefei,
+        });
+        await isNeedToUpdateMongoDbSer();
+      }
     });
     //console.log(callback);
   });
-  res.send("ok");
-};
-
+}
 
 async function doUpdate(callback) {
-  console.log('go')
+  console.log("go");
+  // const date = new Date();
+  // console.log(`${date.getDate() + 1}-0${
+  //   date.getMonth() + 1
+  // }-${date.getFullYear()}`);
+
   await getAllCardapio(async (next) => {
     await updateCardapio(next, (e) => {
       console.log(e);
@@ -106,4 +88,4 @@ function main() {
   return;
 }
 
-module.exports = { main, router, checkForUpdate, dropDatabase};
+module.exports = { main, router, checkForUpdate, dropDatabase };
