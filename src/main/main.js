@@ -4,13 +4,11 @@ const router = express.Router();
 const { isItNeedToNotify } = require("../lodash/verifyIsEqual");
 const {
   postCardapio,
-  todosOsCardpio,
+  todosOsCardapio,
   dropCollection,
   updateCardapio,
   findCardapioByDate,
   postUsersTokens,
-  postNews,
-  getNews,
 } = require("../databases/querys");
 
 const { getAllCardapio } = require("../cardapio/getCardapio");
@@ -29,7 +27,7 @@ router.post("/new", async (req, res) => {
 });
 
 router.get("/api", async (req, res) => {
-  const resolute = await todosOsCardpio((doc) => doc);
+  const resolute = await todosOsCardapio((doc) => doc);
   if (resolute.length > 5) {
     await dropCollection((e) => {
       if (e) {
