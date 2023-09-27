@@ -18,7 +18,7 @@ app.use(bodyParser.json());
 const { main, dropDatabase, router, checkForUpdate } = require("./main/main.js");
 
 cron.schedule(
-  "*/30 * * * * *",
+  "*/5 * * * 1-5",
   async () => {
     console.log("hi");
     // await update();
@@ -30,17 +30,17 @@ cron.schedule(
   }
 );
 
-cron.schedule(
-  "45 9-17 * * 1-3",
-  function () {
-    dropDatabase();
-    console.log("This runs every 5 minutes");
-  },
-  {
-    scheduled: true,
-    timezone: "America/Sao_Paulo",
-  }
-);
+// cron.schedule(
+//   "45 9-17 * * 1-3",
+//   function () {
+//     dropDatabase();
+//     console.log("This runs every 5 minutes");
+//   },
+//   {
+//     scheduled: true,
+//     timezone: "America/Sao_Paulo",
+//   }
+// );
 
 //const db = mongoose.connection;
 
