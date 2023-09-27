@@ -1,6 +1,3 @@
-const express = require("express");
-const router = express.Router();
-
 const { isItNeedToNotify } = require("../lodash/verifyIsEqual");
 
 const {
@@ -75,7 +72,7 @@ async function checkForUpdate() {
 }
 
 async function doUpdate(callback) {
-  console.log("go");
+  // console.log("go");
 
   await getAllCardapio(async (next) => {
     await updateCardapio(next);
@@ -92,4 +89,4 @@ function main() {
   return;
 }
 
-module.exports = { main, router, checkForUpdate, dropDatabase };
+module.exports = { main, checkForUpdate, dropDatabase };

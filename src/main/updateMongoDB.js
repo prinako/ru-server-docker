@@ -13,9 +13,7 @@ async function isNeedToDropDatabase(){
     await dropCollectionSer(async(e)=>{
         if(e){
             await getAllCardapio(async(novoCadapio)=>{
-                await postCardapioSer(novoCadapio,(next)=>{
-
-                });
+                await postCardapioSer(novoCadapio);
             })
         }else{
             console.log(e);
