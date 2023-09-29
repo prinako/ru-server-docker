@@ -3,10 +3,10 @@ require("dotenv").config();
 const cron = require("node-cron");
 
 
-const { checkForUpdate } = require("./main/main.js");
+const {main, checkForUpdate } = require("./main/main.js");
 
 cron.schedule(
-  "*/5 * * * 1-5",
+  "*/15 * * * 1-5",
   async () => {
     // console.log("hi");
     // await update();
@@ -17,6 +17,8 @@ cron.schedule(
     timezone: "America/Sao_Paulo",
   }
 );
+
+main()
 
 // cron.schedule(
 //   "45 9-17 * * 1-3",

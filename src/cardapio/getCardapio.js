@@ -5,6 +5,8 @@ const cheerio = require('cheerio');
 let dateObj = new Date();
 
 async function getAllCardapio (next){
+    console.log("---------------------\nfaching from saest.ufpa.br \n---------------------");
+
     const siteRuUrl = process.env.RUSITE;
     try {
         const {data} = await axios({

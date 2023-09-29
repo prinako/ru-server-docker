@@ -44,6 +44,7 @@ async function dropDatabase() {
 }
 
 async function checkForUpdate() {
+  console.log("checking for update...");
   //for today date
   const date = new Date();
   const toDayDate = `${date.getDate()}-0${
