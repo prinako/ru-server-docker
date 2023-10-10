@@ -9,6 +9,8 @@ const fcm = new FCM(serverKey);
 // get all users tokens
 async function notifyUserCardapioDeHojeMudou({ almoco, jantar }) {
   const userToken = await getAllUsersTokensSer((d) => d);
+  console.log("---------------------\n Notification \n---------------------");
+  
   // console.log(userToken);
   console.log(almoco, jantar)
   if ((almoco.isAlmocoNeed && jantar.isJantarNeed)) {
