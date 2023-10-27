@@ -57,8 +57,8 @@ async function notifyUserCardapioDeHojeMudou({ almoco, jantar }) {
 //if we have new cardapio for the week.
 async function novoCardapioDaSemana() {
   // get user token
-  const userToken = await getAllUsersTokens((d) => d);
-  // console.log(userToken);
+  const userToken = await getAllUsersTokensSer((d) => d);
+  console.log('---------- Notify novo cardapio ----------');
   const message = {
     registration_ids: userToken,
     notification: {

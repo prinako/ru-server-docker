@@ -42,7 +42,7 @@ async function postCardapio(dados, next) {
     await d
       .save()
       .then(async (resolute) => {
-        await connectMongoDBserver(d);
+        // await connectMongoDBserver(d);
         next(resolute);
       })
       .catch((err) => next(err.keyValue));

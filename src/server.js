@@ -30,7 +30,7 @@ cron.schedule(
     timezone: "America/Sao_Paulo",
   }
 );
-main()
+main();
 
 // checkForUpdate()
 

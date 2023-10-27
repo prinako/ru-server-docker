@@ -37,16 +37,16 @@ async function checkForUpdate() {
   const todosOsCar = await todosOsCardapio((duc) => duc);
 
   if (todosOsCar.length > 5) {
-    console.log('----------------------------------');
-    console.log('---- need to drop database -------');
-    console.log('----------------------------------');
+    console.log("----------------------------------");
+    console.log("---- need to drop database -------");
+    console.log("----------------------------------");
 
     await dropDatabase(async (e) => {
       if (e) {
         main();
         await isNeedToDropDatabase();
         await novoCardapioDaSemana();
-      }
+        }
     });
   } else {
     const date = new Date();
@@ -58,6 +58,7 @@ async function checkForUpdate() {
     //  console.log(cardapioDeHoje);
 
     await doUpdate(async () => {
+      console.log("checking for update...");
       await isItNeedToNotify(cardapioDeHoje, toDayDate, async (next) => {
         // console.log(next.almoco.isAlmocoNeed);
         if (next.almoco.isAlmocoNeed || next.json.isJanterNeed) {
@@ -70,14 +71,15 @@ async function checkForUpdate() {
         }
       });
       //console.log(callback);
-      console.log("checking for update...");
     });
   }
 }
 
 async function doUpdate(callback) {
+  // let novoCardapio = [];
   await getAllCardapio(async (next) => {
     if (next) {
+      // novoCardapio = next;
       await updateCardapio(next);
     }
   });
@@ -85,9 +87,11 @@ async function doUpdate(callback) {
 }
 
 async function main() {
-  await getAllCardapio(async (next) => {
-    if(next){
-      postCardapio(await next, (e) => e);
+  await getAllCardapio(async (doc) => {
+    if (doc) {
+      postCardapio(await doc, (e) => {
+        // console.log(e)
+      });
     }
   });
   return;

@@ -41,7 +41,7 @@ async function postCardapioSer(dados, next) {
     await d
       .save()
       .then(async (resolute) => {
-        await connectMongoDBserver(d);
+        // await connectMongoDBserver(d);
         next(resolute);
       })
       .catch((err) => next(err.keyValue));
@@ -52,9 +52,9 @@ async function connectMongoDBserver(dados) {
   console.log(`we wii connect soon: ` + dados);
 }
 
-async function updateCardapioSer(dados) {
-  formatCardapioFroDatabaseSer(dados, async (novoCadapio) => {
-    await CardapioSer.findOneAndUpdate({ data: dados.dia[1] }, novoCadapio, {
+async function updateCardapioSer(doc) {
+  formatCardapioFroDatabaseSer(doc, async (novoCadapio) => {
+    await CardapioSer.findOneAndUpdate({ data: doc.dia[1] }, novoCadapio, {
       upsert: true,
     })
       .then()
