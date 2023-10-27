@@ -36,7 +36,7 @@ async function checkForUpdate() {
   //for today date
   const todosOsCar = await todosOsCardapio((duc) => duc);
 
-  if (todosOsCar.length > 5) {
+  if (todosOsCar.length > 4) {
     console.log("----------------------------------");
     console.log("---- need to drop database -------");
     console.log("----------------------------------");

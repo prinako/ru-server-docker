@@ -75,7 +75,7 @@ async function novoCardapioDaSemana() {
 async function sendNotification(message) {
   await fcm.send(message, (err, response) => {
     if (err) {
-      console.log("Something has gone wrong!" + err.failure);
+      console.log("Something has gone wrong!" + err);
       console.log("Respponse:! " + response);
     }
   });
