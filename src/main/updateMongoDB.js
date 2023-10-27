@@ -4,7 +4,7 @@ const {getAllCardapio} = require("../cardapio/getCardapio");
 async function isNeedToUpdateMongoDbSer(){
     await getAllCardapio(async(novoCadapio)=>{
         await updateCardapioSer(novoCadapio);
-    })
+    });
     return;
 }
 

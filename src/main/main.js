@@ -24,68 +24,71 @@ const {
 
 //=============================///
 //main functions
-async function dropDatabase() {
+async function dropDatabase(calk) {
+  // const todosOsCar = await todosOsCardapio((duc) => duc);
+
+  await dropCollection(async (e) => {
+    return calk(e);
+  });
+}
+
+async function checkForUpdate() {
+  //for today date
   const todosOsCar = await todosOsCardapio((duc) => duc);
 
   if (todosOsCar.length > 5) {
-    await dropCollection(async (e) => {
-      // console.log(e);
+    console.log('----------------------------------');
+    console.log('---- need to drop database -------');
+    console.log('----------------------------------');
+
+    await dropDatabase(async (e) => {
       if (e) {
         main();
         await isNeedToDropDatabase();
-        // notify all users
         await novoCardapioDaSemana();
-        return;
-      } else {
-        console.log(e);
       }
+    });
+  } else {
+    const date = new Date();
+    const toDayDate = `${date.getDate()}-0${
+      date.getMonth() + 1
+    }-${date.getFullYear()}`;
+
+    const cardapioDeHoje = await findCardapioByDate(toDayDate, (e) => e);
+    //  console.log(cardapioDeHoje);
+
+    await doUpdate(async () => {
+      await isItNeedToNotify(cardapioDeHoje, toDayDate, async (next) => {
+        // console.log(next.almoco.isAlmocoNeed);
+        if (next.almoco.isAlmocoNeed || next.json.isJanterNeed) {
+          await notifyUserCardapioDeHojeMudou({
+            almoco: next.almoco,
+            jantar: next.jantar,
+            nome: next.nomeDaRefei,
+          });
+          await isNeedToUpdateMongoDbSer();
+        }
+      });
+      //console.log(callback);
+      console.log("checking for update...");
     });
   }
 }
 
-async function checkForUpdate() {
-  console.log("checking for update...");
-  //for today date
-  const date = new Date();
-  const toDayDate = `${date.getDate()}-0${
-    date.getMonth() + 1
-  }-${date.getFullYear()}`;
-
-  await dropDatabase();
-
-  const cardapioDeHoje = await findCardapioByDate(toDayDate, (e) => e);
-  //  console.log(cardapioDeHoje);
-
-  await doUpdate(async () => {
-    await isItNeedToNotify(cardapioDeHoje, toDayDate, async (next) => {
-      // console.log(next.almoco.isAlmocoNeed);
-      if (next.almoco.isAlmocoNeed || next.json.isJanterNeed) {
-        await notifyUserCardapioDeHojeMudou({
-          almoco: next.almoco,
-          jantar: next.jantar,
-          nome: next.nomeDaRefei,
-        });
-        await isNeedToUpdateMongoDbSer();
-      }
-    });
-    //console.log(callback);
-  });
-}
-
 async function doUpdate(callback) {
-  // console.log("go");
-
   await getAllCardapio(async (next) => {
-    await updateCardapio(next);
+    if (next) {
+      await updateCardapio(next);
+    }
   });
   return callback();
 }
 
-function main() {
-  getAllCardapio(async (next) => {
-    postCardapio(await next, (e) => {
-      // console.log("writing cardapio no database");
-    });
+async function main() {
+  await getAllCardapio(async (next) => {
+    if(next){
+      postCardapio(await next, (e) => e);
+    }
   });
   return;
 }

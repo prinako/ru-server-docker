@@ -18,7 +18,21 @@ cron.schedule(
   }
 );
 
+cron.schedule(
+  "*/30 * * * 0-2",
+  async () => {
+    // console.log("hi");
+    // await update();
+    await main();
+  },
+  {
+    scheduled: true,
+    timezone: "America/Sao_Paulo",
+  }
+);
 main()
+
+// checkForUpdate()
 
 // cron.schedule(
 //   "45 9-17 * * 1-3",
