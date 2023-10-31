@@ -26,7 +26,6 @@ const {
 //main functions
 async function dropDatabase(calk) {
   // const todosOsCar = await todosOsCardapio((duc) => duc);
-
   await dropCollection(async (e) => {
     return calk(e);
   });
@@ -34,9 +33,8 @@ async function dropDatabase(calk) {
 
 async function checkForUpdate() {
   //for today date
-  const todosOsCar = await todosOsCardapio((duc) => duc);
-
-  if (todosOsCar.length > 5) {
+  const todosOsCar = await todosOsCardapio(async(duc) =>{ 
+    if (duc.length > 6) {
     console.log("----------------------------------");
     console.log("---- need to drop database -------");
     console.log("----------------------------------");
@@ -73,6 +71,7 @@ async function checkForUpdate() {
       //console.log(callback);
     });
   }
+  });
 }
 
 async function doUpdate(callback) {
