@@ -5,6 +5,14 @@ const isEqual = require("lodash/isEqual");
 const { findCardapioByDate } = require("../databases/querys");
 
 // Defina uma função assíncrona chamada isItNeedToNotify.
+/**
+ * Checks if it is necessary to notify about changes in the menu for a given date and provides information about the changes.
+ *
+ * @param {Object} oldCardapio - The old menu item for the date.
+ * @param {string} date - The date to check for changes.
+ * @param {Function} next - The callback function to be executed with the information about the changes.
+ * @returns {Promise<void>} - A promise that resolves with the result of the callback function.
+ */
 async function isItNeedToNotify(oldCardapio, date, next) {
   // Verifique se o objeto oldCardapio não é nulo.
   if (oldCardapio != null) {

@@ -7,6 +7,20 @@ const serverKey = process.env.SERVERKEY;
 const fcm = new FCM(serverKey);
 
 // get all users tokens
+/**
+ * Notifies the user about changes in the menu for today's meals.
+ *
+ * @param {Object} options - The options for the notification.
+ * @param {Object} options.almoco - The information about changes in the lunch menu.
+ * @param {boolean} options.almoco.isAlmocoNeed - Indicates if changes in the lunch menu are needed.
+ * @param {string} options.almoco.oldAlmoco - The previous lunch menu.
+ * @param {string} options.almoco.newAlmoco - The updated lunch menu.
+ * @param {Object} options.jantar - The information about changes in the dinner menu.
+ * @param {boolean} options.jantar.isJantarNeed - Indicates if changes in the dinner menu are needed.
+ * @param {string} options.jantar.oldJantar - The previous dinner menu.
+ * @param {string} options.jantar.newJantar - The updated dinner menu.
+ * @returns {Promise<void>} - A promise that resolves when the notification is sent.
+ */
 async function notifyUserCardapioDeHojeMudou({ almoco, jantar }) {
   const userToken = await getAllUsersTokensSer((d) => d);
   console.log("---------------------\n Notification \n---------------------");
@@ -55,6 +69,11 @@ async function notifyUserCardapioDeHojeMudou({ almoco, jantar }) {
 }
 
 //if we have new cardapio for the week.
+/**
+ * Generates and sends a notification to all registered users about the availability of a new menu for the week.
+ *
+ * @returns {Promise<void>} - A promise that resolves when the notification is sent.
+ */
 async function novoCardapioDaSemana() {
   // get user token
   const userToken = await getAllUsersTokensSer((d) => d);
@@ -72,6 +91,12 @@ async function novoCardapioDaSemana() {
   sendNotification(message);
 }
 
+/**
+ * Sends a notification using the Firebase Cloud Messaging service.
+ *
+ * @param {string} message - The message to be sent.
+ * @returns {Promise<void>} - A promise that resolves when the notification is sent successfully.
+ */
 async function sendNotification(message) {
   await fcm.send(message, (err, response) => {
     if (err) {

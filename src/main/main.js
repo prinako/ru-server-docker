@@ -24,6 +24,12 @@ const {
 
 //=============================///
 //main functions
+/**
+ * Drops the database collection using the provided callback function.
+ *
+ * @param {Function} calk - The callback function used to drop the collection.
+ * @returns {Promise<void>} - A promise that resolves when the collection is dropped successfully.
+ */
 async function dropDatabase(calk) {
   // const todosOsCar = await todosOsCardapio((duc) => duc);
   await dropCollection(async (e) => {
@@ -31,49 +37,76 @@ async function dropDatabase(calk) {
   });
 }
 
+/**
+ * Checks for updates in the database and performs necessary actions based on the current state.
+ *
+ * @returns {Promise<void>} - A promise that resolves when the update check is completed.
+ */
 async function checkForUpdate() {
   //for today date
-  const todosOsCar = await todosOsCardapio(async(duc) =>{ 
+  // const todosOsCar =
+  await todosOsCardapio(async (duc) => {
+    console.log(duc.length);
+
     if (duc.length > 6) {
-    console.log("----------------------------------");
-    console.log("---- need to drop database -------");
-    console.log("----------------------------------");
+      console.log("----------------------------------");
+      console.log("---- need to drop database -------");
+      console.log("----------------------------------");
 
-    await dropDatabase(async (e) => {
-      if (e) {
-        main();
-        await isNeedToDropDatabase();
-        await novoCardapioDaSemana();
-        }
-    });
-  } else {
-    const date = new Date();
-    const toDayDate = `${date.getDate()}-0${
-      date.getMonth() + 1
-    }-${date.getFullYear()}`;
-
-    const cardapioDeHoje = await findCardapioByDate(toDayDate, (e) => e);
-    //  console.log(cardapioDeHoje);
-
-    await doUpdate(async () => {
-      console.log("checking for update...");
-      await isItNeedToNotify(cardapioDeHoje, toDayDate, async (next) => {
-        // console.log(next.almoco.isAlmocoNeed);
-        if (next.almoco.isAlmocoNeed || next.json.isJanterNeed) {
-          await notifyUserCardapioDeHojeMudou({
-            almoco: next.almoco,
-            jantar: next.jantar,
-            nome: next.nomeDaRefei,
-          });
-          await isNeedToUpdateMongoDbSer();
+      await dropDatabase(async (e) => {
+        if (e) {
+          main();
+          await isNeedToDropDatabase();
+          await novoCardapioDaSemana();
         }
       });
-      //console.log(callback);
-    });
-  }
+    } else {
+      const date = new Date();
+
+      let toDayDate;
+
+      if (date.getMonth() > 9) {
+        toDayDate = `${date.getDate()}-${
+          date.getMonth() + 1
+        }-${date.getFullYear()}`;
+      } else {
+        toDayDate = `${date.getDate()}-0${
+          date.getMonth() + 1
+        }-${date.getFullYear()}`;
+      }
+
+      const cardapioDeHoje = await findCardapioByDate(toDayDate, (e) => e);
+      //  console.log(cardapioDeHoje);
+
+      await doUpdate(async () => {
+        console.log("checking for update...");
+
+        if (cardapioDeHoje !== null) {
+          await isItNeedToNotify(cardapioDeHoje, toDayDate, async (next) => {
+            // console.log(next.almoco.isAlmocoNeed);
+            console.log(next);
+            if (next.almoco.isAlmocoNeed || next.json.isJanterNeed) {
+              await notifyUserCardapioDeHojeMudou({
+                almoco: next.almoco,
+                jantar: next.jantar,
+                nome: next.nomeDaRefei,
+              });
+              await isNeedToUpdateMongoDbSer();
+            }
+          });
+        }
+        //console.log(callback);
+      });
+    }
   });
 }
 
+/**
+ * Performs a database update by retrieving all menu items, updating them, and executing the provided callback function.
+ *
+ * @param {Function} callback - The callback function to be executed after the update is completed.
+ * @returns {Promise<any>} - A promise that resolves with the result of the callback function.
+ */
 async function doUpdate(callback) {
   // let novoCardapio = [];
   await getAllCardapio(async (next) => {
@@ -85,6 +118,11 @@ async function doUpdate(callback) {
   return callback();
 }
 
+/**
+ * Executes the main function to retrieve all menu items, post them, and perform necessary actions.
+ *
+ * @returns {Promise<void>} - A promise that resolves when the main function is completed.
+ */
 async function main() {
   await getAllCardapio(async (doc) => {
     if (doc) {

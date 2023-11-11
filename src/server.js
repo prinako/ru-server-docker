@@ -7,6 +7,7 @@ const {main, checkForUpdate } = require("./main/main.js");
 
 cron.schedule(
   "*/15 * * * 1-5",
+  // "*/1 * * * *",
   async () => {
     // console.log("hi");
     // await update();
