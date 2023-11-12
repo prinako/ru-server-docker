@@ -16,7 +16,7 @@ RUN apk add -U tzdata
 
 ENV TZ=America/Sao_Paulo
 
-RUN cp /usr/share/zoneinfo/America/Santiago /etc/localtime
+RUN cp /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
 
 WORKDIR /usr/src/app
 
