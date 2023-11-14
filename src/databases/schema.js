@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const { connectDBs } = require("./DBconncetions");
 
-const Schema = mongoose.Schema;
+const {Schema} = mongoose;
 
 //Schema para criar usaurío.
 const usersSchema = new Schema(
@@ -82,6 +82,7 @@ const cadapioSchema = new Schema(
     dia: {
       type: String,
       required: true,
+      unique:true,
     },
     data: {
       type: String,

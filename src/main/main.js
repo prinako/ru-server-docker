@@ -57,7 +57,6 @@ async function checkForUpdate() {
         if (e) {
           main();
           await isNeedToDropDatabase();
-          await novoCardapioDaSemana();
         }
       });
     } else {
@@ -126,7 +125,10 @@ async function doUpdate(callback) {
 async function main() {
   await getAllCardapio(async (doc) => {
     if (doc) {
-      postCardapio(await doc, (e) => {
+      postCardapio(await doc, async (e) => {
+        if(e === 5){
+          await novoCardapioDaSemana()
+        }
         // console.log(e)
       });
     }

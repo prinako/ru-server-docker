@@ -42,6 +42,7 @@ async function formatCardapioFroDatabase(dados, next) {
   return next(novoCadapio);
 }
 
+let dataCount = 0;
 // Função para adicionar um novo cardápio
 /**
  * Posts a new menu item to the database.
@@ -51,16 +52,30 @@ async function formatCardapioFroDatabase(dados, next) {
  * @returns {Promise<void>} - A promise that resolves when the menu item is successfully posted.
  */
 async function postCardapio(dados, next) {
-  formatCardapioFroDatabase(dados, async (novoCadapio) => {
+  await formatCardapioFroDatabase(dados, async (novoCadapio) => {
+    const verifyBeforeTnsert = await findCardapioByDate(
+      novoCadapio.data,
+      (d) => d
+    );
+
     const d = new CardapioH(novoCadapio);
-    await d
-      .save()
-      .then(async (resolute) => {
-        // await connectMongoDBserver(d);
-        next(resolute);
-      })
-      .catch((err) => next(err.keyValue));
+
+    if (!verifyBeforeTnsert) {
+      await d
+        .save()
+        .then(async (resolute) => {
+          // await connectMongoDBserver(d);
+          dataCount += 1;
+          // console.log(dataCount)
+          next(dataCount);
+        })
+        .catch((err) => {
+          console.log(err);
+          next(err.keyValue);
+        });
+    }
   });
+  // console.log(dataCount)
 }
 
 // Função fictícia para conectar-se ao servidor MongoDB
@@ -78,11 +93,15 @@ async function connectMongoDBserver(dados) {
  */
 async function updateCardapio(dados) {
   formatCardapioFroDatabase(dados, async (novoCadapio) => {
-    await CardapioH.findOneAndUpdate({ data: dados.dia[1] }, novoCadapio, {
+    // await CardapioH.findOneAndUpdate({ data: dados.dia[1] }, novoCadapio, {
+    //   upsert: true,
+    // })
+    await CardapioH.findOneAndUpdate({ data: novoCadapio.data }, novoCadapio, {
       upsert: true,
     })
       .then()
       .catch((err, duc) => {
+        console.log(err);
         if (err) {
           console.log(err);
           return false;
