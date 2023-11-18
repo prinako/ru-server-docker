@@ -106,7 +106,7 @@ async function novoCardapioDaSemana() {
  * This function retrieves the user tokens using the `getAllUsersTokensSer` function and sends notifications to the users about the menu of the day. If there is a lunch menu, a notification with the title "Almoço do dia" and the lunch menu body is sent. If there is a dinner menu, a notification with the title "Jantar do dia" and the dinner menu body is sent. The notifications are sent using the `sendNotification` function.
  */
 async function cardapioDoDia({ almoco, jantar }) {
-  console.log(almoco)
+  // console.log(almoco)
   // get user token
   const userToken = await getAllUsersTokensSer((d) => d);
   console.log("---------- Notify do dia cardapio ----------");
