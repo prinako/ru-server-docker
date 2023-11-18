@@ -46,7 +46,7 @@ cron.schedule(
 );
 
 cron.schedule(
-  "*/1 * * * 1-5",
+  "0 11 * * 1-5",
   async () => {
     console.log("hi");
     await notifyUserCardapioDoDia("almoco");
