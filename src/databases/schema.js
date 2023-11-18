@@ -82,7 +82,6 @@ const cadapioSchema = new Schema(
     dia: {
       type: String,
       required: true,
-      unique:true,
     },
     data: {
       type: String,
