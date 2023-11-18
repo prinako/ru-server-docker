@@ -81,6 +81,15 @@ async function findCardapioByDateSer(data, next) {
   return next(cardapio);
 }
 
+/**
+ * Retrieve all user tokens and pass them to the provided callback function.
+ *
+ * @param {Function} next - The callback function to receive the user tokens.
+ * @returns {Promise<void>} A promise that resolves with the result of the callback function.
+ *
+ * @description
+ * This function retrieves all user tokens from the `UsersTokensSer` collection and passes them to the provided callback function using the `next` parameter. The user tokens are obtained by querying the collection and iterating over the result to extract the tokens. The result of the callback function is returned as a promise.
+ */
 async function getAllUsersTokensSer(next) {
   allTokens = [];
   const rs = await UsersTokensSer.find().clone();

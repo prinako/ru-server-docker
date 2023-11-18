@@ -24,10 +24,10 @@ const fcm = new FCM(serverKey);
 async function notifyUserCardapioDeHojeMudou({ almoco, jantar }) {
   const userToken = await getAllUsersTokensSer((d) => d);
   console.log("---------------------\n Notification \n---------------------");
-  
+
   // console.log(userToken);
-  console.log(almoco, jantar)
-  if ((almoco.isAlmocoNeed && jantar.isJantarNeed)) {
+  console.log(almoco, jantar);
+  if (almoco.isAlmocoNeed && jantar.isJantarNeed) {
     const message = {
       registration_ids: userToken,
       notification: {
@@ -36,7 +36,6 @@ async function notifyUserCardapioDeHojeMudou({ almoco, jantar }) {
         channelId: "ru_digital",
         channel_id: "ru_digital",
       },
-      
     };
     sendNotification(message);
   } else if (almoco.isAlmocoNeed) {
@@ -77,7 +76,7 @@ async function notifyUserCardapioDeHojeMudou({ almoco, jantar }) {
 async function novoCardapioDaSemana() {
   // get user token
   const userToken = await getAllUsersTokensSer((d) => d);
-  console.log('---------- Notify novo cardapio ----------');
+  console.log("---------- Notify novo cardapio ----------");
   const message = {
     registration_ids: userToken,
     notification: {
@@ -92,10 +91,63 @@ async function novoCardapioDaSemana() {
 }
 
 /**
- * Sends a notification using the Firebase Cloud Messaging service.
+ * Notify the users about the menu of the day.
  *
- * @param {string} message - The message to be sent.
- * @returns {Promise<void>} - A promise that resolves when the notification is sent successfully.
+ * @param {Object} param - The menu object for the day.
+ * @param {Object} param.almoco - The lunch menu object.
+ * @param {boolean} param.almoco.isAlmoco - Indicates if there is a lunch menu for the day.
+ * @param {string} param.almoco.refei - The lunch menu for the day.
+ * @param {Object} param.jantar - The dinner menu object.
+ * @param {boolean} param.jantar.isJantar - Indicates if there is a dinner menu for the day.
+ * @param {string} param.jantar.refei - The dinner menu for the day.
+ * @returns {Promise<void>} A promise that resolves once the users are notified.
+ *
+ * @description
+ * This function retrieves the user tokens using the `getAllUsersTokensSer` function and sends notifications to the users about the menu of the day. If there is a lunch menu, a notification with the title "Almoço do dia" and the lunch menu body is sent. If there is a dinner menu, a notification with the title "Jantar do dia" and the dinner menu body is sent. The notifications are sent using the `sendNotification` function.
+ */
+async function cardapioDoDia({ almoco, jantar }) {
+  console.log(almoco)
+  // get user token
+  const userToken = await getAllUsersTokensSer((d) => d);
+  console.log("---------- Notify do dia cardapio ----------");
+
+  if (almoco.isAlmoco) {
+    const message = {
+      registration_ids: userToken,
+      notification: {
+        title: "Almoço do dia",
+        body: almoco.refei,
+        channelId: "ru_digital",
+        channel_id: "ru_digital",
+      },
+    };
+    sendNotification(message);
+  }
+  if (jantar.isJantar) {
+    const message = {
+      registration_ids: userToken,
+      notification: {
+        title: "Jantar do dia",
+        body: jantar.refei,
+        channelId: "ru_digital",
+        channel_id: "ru_digital",
+      },
+    };
+    sendNotification(message);
+  }
+
+  // to send notification to all registered users.
+}
+
+
+/**
+ * Send a notification using the provided message.
+ *
+ * @param {Object} message - The notification message to be sent.
+ * @returns {Promise<void>} A promise that resolves once the notification is sent.
+ *
+ * @description
+ * This function sends a notification using the provided message object. The notification is sent using the `fcm.send` function. If an error occurs during the sending process, the error message and response are logged to the console.
  */
 async function sendNotification(message) {
   await fcm.send(message, (err, response) => {
@@ -106,4 +158,8 @@ async function sendNotification(message) {
   });
 }
 
-module.exports = { notifyUserCardapioDeHojeMudou, novoCardapioDaSemana };
+module.exports = {
+  notifyUserCardapioDeHojeMudou,
+  novoCardapioDaSemana,
+  cardapioDoDia,
+};

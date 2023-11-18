@@ -125,25 +125,29 @@ async function todosOsCardapio(next) {
   return next(rs);
 }
 
-// Função para encontrar um cardápio com base na data
 /**
- * Finds a menu item in the database by its date and passes it to the provided callback function.
+ * Find a menu by date and pass it to the provided callback function.
  *
- * @param {string} data - The date of the menu item to find.
- * @param {Function} next - The callback function to be executed with the found menu item.
- * @returns {Promise<any>} - A promise that resolves with the result of the callback function.
+ * @param {string} data - The date to search for the menu.
+ * @param {Function} next - The callback function to receive the menu.
+ * @returns {Promise<void>} A promise that resolves with the result of the callback function.
+ *
+ * @description
+ * This function searches for a menu in the `Cardapio` collection based on the provided date. The menu with the matching date is retrieved using the `findOne` method with the condition `{ data: data }`. The result is then passed to the provided callback function using the `next` parameter. The result of the callback function is returned as a promise.
  */
 async function findCardapioByDate(data, next) {
   const cardapio = await CardapioH.findOne({ data: data });
   return next(cardapio);
 }
 
-// Função para obter todos os tokens de usuário
 /**
- * Retrieves all user tokens from the database and passes them to the provided callback function.
+ * Retrieve all user tokens and pass them to the provided callback function.
  *
- * @param {Function} next - The callback function to be executed with the retrieved tokens.
- * @returns {Promise<any>} - A promise that resolves with the result of the callback function.
+ * @param {Function} next - The callback function to receive the user tokens.
+ * @returns {Promise<void>} A promise that resolves with the result of the callback function.
+ *
+ * @description
+ * This function retrieves all user tokens from the `UsersTokensH` collection and passes them to the provided callback function using the `next` parameter. The user tokens are obtained by querying the collection and iterating over the result to extract the tokens. The result of the callback function is returned as a promise.
  */
 async function getAllUsersTokens(next) {
   allTokens = [];
@@ -154,11 +158,15 @@ async function getAllUsersTokens(next) {
 }
 
 // Função para excluir a coleção de cardápios
+
 /**
- * Drops the collection in the database and passes the result to the provided callback function.
+ * Drop the CardapioH collection and verify the result.
  *
- * @param {Function} next - The callback function to be executed with the result of the collection drop.
- * @returns {Promise<void>} - A promise that resolves when the collection is dropped successfully.
+ * @param {Function} next - The callback function to receive the result of the operation.
+ * @returns {Promise<void>} A promise that resolves with the result of the callback function.
+ *
+ * @description
+ * This function drops the CardapioH collection. It first verifies if a new cardápio has been added or not. The result of the operation is passed to the provided callback function using the `next` parameter. If the collection is dropped successfully, the callback function is called with `true`. If an error occurs during the operation, the error is logged to the console and the callback function is called with `false`. The result of the callback function is returned as a promise.
  */
 async function dropCollection(next) {
   // verify collection if new cardápio has ben added or not.
