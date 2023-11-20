@@ -10,7 +10,7 @@ const {
 
 const { getAllCardapio } = require("../cardapio/getCardapio");
 
-const {getTodayDate} = require("../todayDate/getTodayDate");
+const { getTodayDate } = require("../todayDate/getTodayDate");
 
 // Importa um módulo relacionado ao envio de notificações push.
 const {
@@ -51,50 +51,54 @@ async function dropDatabase(calk) {
 async function checkForUpdate() {
   //for today date
   // const todosOsCar =
-  await todosOsCardapio(async (duc) => {
-    console.log(duc.length);
+  let duc = await todosOsCardapio((duc) => duc);
+  console.log(duc.length);
 
-    if (duc.length > 6) {
-      console.log("----------------------------------");
-      console.log("---- need to drop database -------");
-      console.log("----------------------------------");
+  if (duc.length > 5) {
+    console.log("----------------------------------");
+    console.log("---- need to drop database -------");
+    console.log("----------------------------------");
 
-      await dropDatabase(async (e) => {
-        if (e) {
-          main();
-          await isNeedToDropDatabase();
-        }
-      });
-    } else {
-      
-      const toDayDate = await getTodayDate((date)=>date);
-      console.log(toDayDate)
-      const cardapioDeHoje = await findCardapioByDate(toDayDate, (e) => e);
-       console.log(cardapioDeHoje);
+    await dropCollection(async (e) => {
+      if (e) {
+        await main();
+      }
+    });
+  } else {
+    const toDayDate = await getTodayDate((date) => date);
 
-      await doUpdate(async () => {
-        console.log("checking for update...");
+    console.log(toDayDate);
 
-        if (cardapioDeHoje !== null) {
-          await isItNeedToNotify(cardapioDeHoje, toDayDate, async (next) => {
-            // console.log(next.almoco.isAlmocoNeed);
-            console.log(next);
-            if (next.almoco.isAlmocoNeed || next.json.isJanterNeed) {
-              await notifyUserCardapioDeHojeMudou({
-                almoco: next.almoco,
-                jantar: next.jantar,
-                nome: next.nomeDaRefei,
-              });
-              await isNeedToUpdateMongoDbSer();
-            }
+    const cardapioDeHoje = await findCardapioByDate(toDayDate, (e) => e);
+    // console.log(cardapioDeHoje);
+
+    await doUpdate(async () => {
+      console.log("checking for update...");
+
+      if (cardapioDeHoje !== null) {
+        let cadapioVerified = await isItNeedToNotify(
+          cardapioDeHoje,
+          toDayDate,
+          (next) => next
+        );
+        // console.log(next.almoco.isAlmocoNeed);
+        console.log(cadapioVerified);
+        if (
+          cadapioVerified.almoco.isAlmocoNeed ||
+          cadapioVerified.jantar.isJanterNeed
+        ) {
+          await notifyUserCardapioDeHojeMudou({
+            almoco: next.almoco,
+            jantar: next.jantar,
+            nome: next.nomeDaRefei,
           });
+          await isNeedToUpdateMongoDbSer();
         }
-        //console.log(callback);
-      });
-    }
-  });
+      }
+      //console.log(callback);
+    });
+  }
 }
-
 
 /**
  * Performs a database update by retrieving all menu items, updating them, and executing the provided callback function.
@@ -103,13 +107,11 @@ async function checkForUpdate() {
  * @returns {Promise<any>} - A promise that resolves with the result of the callback function.
  */
 async function doUpdate(callback) {
-  // let novoCardapio = [];
-  await getAllCardapio(async (next) => {
-    if (next) {
-      // novoCardapio = next;
-      await updateCardapio(next);
-    }
-  });
+  let cadapioForUpdate = await getAllCardapio((next) => next);
+
+  if (cadapioForUpdate) {
+    await updateCardapio(cadapioForUpdate);
+  }
   return callback();
 }
 
@@ -126,10 +128,10 @@ async function notifyUserCardapioDoDia(de) {
   const toDayDate = await getTodayDate((date) => date);
 
   const cardapioDeHoje = await findCardapioByDate(toDayDate, (e) => e);
-  
+
   let almoco, jantar;
 
-  if (de === 'almoco') {
+  if (de === "almoco") {
     almoco = {
       isAlmoco: true,
       refei: cardapioDeHoje.amoco.nomeDaRefei,
@@ -140,7 +142,7 @@ async function notifyUserCardapioDoDia(de) {
     };
   }
 
-  if (de === 'jantar') {
+  if (de === "jantar") {
     jantar = {
       isJanter: true,
       refei: cardapioDeHoje.jantar.nomeDaRefei,
@@ -150,10 +152,8 @@ async function notifyUserCardapioDoDia(de) {
       isJanter: false,
     };
   }
-  await cardapioDoDia({almoco,jantar});
+  await cardapioDoDia({ almoco, jantar });
 }
-
-
 
 /**
  * Perform the main function to retrieve all menu items, post them, and perform necessary actions.
@@ -164,17 +164,26 @@ async function notifyUserCardapioDoDia(de) {
  * This function is the main entry point that retrieves all menu items using the `getAllCardapio` function. It then posts each menu item using the `postCardapio` function. If the result of posting a menu item is equal to 5, the `novoCardapioDaSemana` function is called. The function returns a promise that resolves when the main function is completed.
  */
 async function main() {
-  await getAllCardapio(async (doc) => {
-    if (doc) {
-      await postCardapio(doc, async (e) => {
-        if(e === 5){
-          await novoCardapioDaSemana()
-        }
-        // console.log(e)
-      });
-    }
-  });
-  return;
+  const allCardapio = await getAllCardapio((doc) => doc);
+
+  // console.log(allCardapio);
+
+  if (allCardapio) {
+    await postCardapio(allCardapio, async (notify) => {
+      if (notify) {
+        await novoCardapioDaSemana();
+        await isNeedToDropDatabase();
+      }
+    });
+
+    // console.log(e)
+  }
+  // return;
 }
 
-module.exports = { main, checkForUpdate, dropDatabase, notifyUserCardapioDoDia };
+module.exports = {
+  main,
+  checkForUpdate,
+  dropDatabase,
+  notifyUserCardapioDoDia,
+};

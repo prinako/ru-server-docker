@@ -1,74 +1,38 @@
-const {
-  CardapioSer,
-  UsersTokensSer,
-} = require("./schema");
-
-async function formatCardapioFroDatabaseSer(dados, next) {
-  const novoCadapio = {
-    dia: dados.dia[0],
-    data: dados.dia[1],
-    amoco: {
-      refeicao: "ALMOÇO",
-      nomeDaRefei: dados.almoco[0],
-      ingredintes: {
-        amo1: dados.almoco[3],
-        amo2: dados.almoco[4],
-        amo3: dados.almoco[5],
-        amo4: dados.almoco[6],
-        amo5: dados.almoco[7],
-      },
-      vegetariano1: dados.almoco[2],
-    },
-    jantar: {
-      refeicao: "JANTAR",
-      nomeDaRefei: dados.jantar[0],
-      ingredintes: {
-        jan1: dados.jantar[3],
-        jan2: dados.jantar[4],
-        jan3: dados.jantar[5],
-        jan4: dados.jantar[6],
-        jan5: dados.jantar[7],
-      },
-      vegetariano2: dados.jantar[2],
-    },
-  };
-  return next(novoCadapio);
-}
+const { CardapioSer, UsersTokensSer } = require("./schema");
 
 async function postCardapioSer(dados, next) {
-  formatCardapioFroDatabaseSer(dados, async (novoCadapio) => {
-    const d = new CardapioSer(novoCadapio);
-    await d
-      .save()
-      .then(async (resolute) => {
-        // await connectMongoDBserver(d);
-        next(resolute);
-      })
-      .catch((err) => next(err.keyValue));
-  });
+  CardapioSer.insertMany(dados)
+    .then(() => {
+      return next(true);
+    })
+    .catch((err) => {
+      return next(false);
+    });
 }
 
-async function connectMongoDBserver(dados) {
-  console.log(`we wii connect soon: ` + dados);
-}
-
-async function updateCardapioSer(doc) {
-  formatCardapioFroDatabaseSer(doc, async (novoCadapio) => {
-    await CardapioSer.findOneAndUpdate({ data: doc.dia[1] }, novoCadapio, {
+/**
+ * Updates the cardapio data in the database with the provided data.
+ * @async
+ * @param {Array} dados - An array of cardapio data to be updated.
+ * @returns {Promise<void>} - A promise that resolves when the cardapio data is updated in the database.
+ *
+ * @description
+ * This function iterates over each element in the provided array of cardapio data and updates the corresponding document in the database using the `findOneAndUpdate` method from the `CardapioH` model. The `upsert` option is set to `true` to create a new document if it doesn't exist. Any errors that occur during the update process are logged to the console. The function returns a promise that resolves when the cardapio data is updated in the database.
+ */
+async function updateCardapioSer(dados) {
+  dados.forEach(async (doc) => {
+    // console.log(doc)
+    await CardapioSer.findOneAndUpdate({ data: doc.data }, doc, {
       upsert: true,
     })
       .then()
-      .catch((err, duc) => {
-        if (err) {
-          console.log(err);
-          return false;
-        }
-        return true;
-      });
-    // .clone();
-    return;
-  });
+      .catch((err) => {
+        console.log(err);
 
+        return false;
+      });
+  });
+  return;
 }
 
 async function todosOsCardapioSer(next) {
@@ -99,10 +63,6 @@ async function getAllUsersTokensSer(next) {
 }
 
 async function dropCollectionSer(next) {
-  // verify collection if new cardápio has ben added or not.
-  // const isToBeDrop = toBeVerified.length;
-  // console.log(isToBeDrop);
-
   await CardapioSer.collection
     .drop()
     .then((e) => next(true))
@@ -110,13 +70,6 @@ async function dropCollectionSer(next) {
       console.error(err);
       return next(false);
     });
-
-}
-
-async function getCardapioFormatToVerifySer(dados, next) {
-  await formatCardapioFroDatabaseSer(dados, (cardapioFormatado) => {
-    return next(cardapioFormatado);
-  });
 }
 
 module.exports = {
@@ -126,6 +79,4 @@ module.exports = {
   updateCardapioSer,
   dropCollectionSer,
   getAllUsersTokensSer,
-  formatCardapioFroDatabaseSer,
-  getCardapioFormatToVerifySer,
 };

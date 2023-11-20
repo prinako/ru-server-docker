@@ -4,12 +4,15 @@ const homeDB_Url = process.env.HOMEMONGO;
 const serverDB_Url = process.env.SERVERDB;
 
 /**
- * Connects to the MongoDB databases and returns the connection objects.
- *
- * @returns {Object} - An object containing the connections to the homeDB and serverDB.
+ * Connects to the homeDB and serverDB MongoDB databases and returns the connections.
+ * @returns {Object} - An object containing the connections to the homeDB and serverDB databases.
  */
 const connectDBs = () => {
-  const mongooseOptions = { useUnifiedTopology: true };
+  const mongooseOptions = {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    // useCreateIndex: true,
+  };
   try {
     const homeDB = mongoose.createConnection(homeDB_Url, mongooseOptions);
     const serverDB = mongoose.createConnection(serverDB_Url, mongooseOptions);

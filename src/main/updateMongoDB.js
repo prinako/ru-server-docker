@@ -12,23 +12,26 @@ const { getAllCardapio } = require("../cardapio/getCardapio");
  * @returns {Promise<void>} - A promise that resolves when the update check and actions are completed.
  */
 async function isNeedToUpdateMongoDbSer() {
-  await getAllCardapio(async (novoCadapio) => {
-    await updateCardapioSer(novoCadapio);
-  });
+  let novoUpdateCar = await getAllCardapio(async (novoCadapio) => novoCadapio);
+
+  await updateCardapioSer(novoUpdateCar);
   return;
 }
 
 /**
- * Checks if it is necessary to drop the database collection and performs the necessary actions accordingly.
+ * Checks if it is necessary to drop the database, and performs necessary actions accordingly.
+ * @async
+ * @returns {Promise<void>} - A promise that resolves when the necessary actions are completed.
  *
- * @returns {Promise<void>} - A promise that resolves when the check and actions are completed.
+ * @description
+ * This function checks if it is necessary to drop the database by calling the `dropCollectionSer` function. If the database needs to be dropped, it retrieves all cardapio data using the `getAllCardapio` function and saves it to the database using the `postCardapioSer` function. If the database does not need to be dropped, it logs the result to the console. The function returns a promise that resolves when the necessary actions are completed.
  */
 async function isNeedToDropDatabase() {
   await dropCollectionSer(async (e) => {
     if (e) {
-      await getAllCardapio(async (novoCadapio) => {
-        await postCardapioSer(novoCadapio, (e) => e);
-      });
+      let novoCar = await getAllCardapio(async (novoCadapio) => novoCadapio);
+
+      await postCardapioSer(novoCar, (e) => e);
     } else {
       console.log(e);
     }
