@@ -13,7 +13,7 @@ async function getTodayDate(next) {
   let toDayDate;
 
   if (date.getMonth() > 9) {
-    toDayDate = `${date.getDate()-1}-${
+    toDayDate = `${date.getDate()}-${
       date.getMonth() +1
     }-${date.getFullYear()}`;
   } else {
