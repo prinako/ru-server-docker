@@ -14,9 +14,9 @@ FROM node:20-alpine
 
 RUN apk add -U tzdata
 
-ENV TZ=America/Sao_Paulo
+ENV TZ=America/Belem
 
-RUN cp /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
+RUN ln -s /usr/share/zoneinfo/America/Belem /etc/localtime
 
 WORKDIR /usr/src/app
 

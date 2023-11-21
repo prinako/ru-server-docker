@@ -8,6 +8,11 @@ const {
   notifyUserCardapioDoDia,
 } = require("./main/main.js");
 
+let options = {
+  scheduled: true,
+  timezone: "America/Belem",
+};
+
 /**
  * Schedule a cron job to execute a function every 15 minutes from Monday to Friday.
  *
@@ -19,6 +24,7 @@ const {
  * @description
  * This code schedules a cron job using the `cron.schedule` function from the `cron` library. The cron job is configured to execute the provided callback function every 15 minutes from Monday to Friday. The cron job is created with the specified pattern, callback, and options. The function returns the cron job instance.
  */
+
 cron.schedule(
   "*/15 * * * 1-5",
   // "*/1 * * * *",
@@ -27,10 +33,7 @@ cron.schedule(
     // await update();
     await checkForUpdate();
   },
-  {
-    scheduled: true,
-    timezone: "America/Sao_Paulo",
-  }
+  options
 );
 
 cron.schedule(
@@ -39,10 +42,7 @@ cron.schedule(
     // console.log("hi");
     await main();
   },
-  {
-    scheduled: true,
-    timezone: "America/Sao_Paulo",
-  }
+  options
 );
 
 cron.schedule(
@@ -51,10 +51,7 @@ cron.schedule(
     console.log("hi");
     await notifyUserCardapioDoDia("almoco");
   },
-  {
-    scheduled: true,
-    timezone: "America/Sao_Paulo",
-  }
+  options
 );
 
 cron.schedule(
@@ -63,10 +60,7 @@ cron.schedule(
     // console.log("hi");
     await notifyUserCardapioDoDia("jantar");
   },
-  {
-    scheduled: true,
-    timezone: "America/Sao_Paulo",
-  }
+  options
 );
 
 /**
