@@ -46,19 +46,19 @@ cron.schedule(
 );
 
 cron.schedule(
-  "30 11 * * 1-5",
+  "* 11 * * 1-5",
   async () => {
     console.log("hi");
-    await notifyUserCardapioDoDia("almoco");
+    await notifyUserCardapioDoDia(1);
   },
   options
 );
 
 cron.schedule(
-  "0 17 * * 1-5",
+  "0 16 * * 1-5",
   async () => {
-    // console.log("hi");
-    await notifyUserCardapioDoDia("jantar");
+    console.log("hi");
+    await notifyUserCardapioDoDia(2);
   },
   options
 );

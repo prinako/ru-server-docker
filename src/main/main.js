@@ -83,10 +83,16 @@ async function checkForUpdate() {
         );
         // console.log(next.almoco.isAlmocoNeed);
         console.log(cadapioVerified);
-        if (
-          cadapioVerified.almoco.isAlmocoNeed ||
-          cadapioVerified.jantar.isJanterNeed
-        ) {
+        if (cadapioVerified.almoco.isAlmocoNeed) {
+          await notifyUserCardapioDeHojeMudou({
+            almoco: next.almoco,
+            jantar: next.jantar,
+            nome: next.nomeDaRefei,
+          });
+          await isNeedToUpdateMongoDbSer();
+        }
+
+        if (cadapioVerified.jantar.isJanterNeed) {
           await notifyUserCardapioDeHojeMudou({
             almoco: next.almoco,
             jantar: next.jantar,
@@ -131,7 +137,7 @@ async function notifyUserCardapioDoDia(de) {
 
   let almoco, jantar;
 
-  if (de === "almoco") {
+  if (de === 1) {
     almoco = {
       isAlmoco: true,
       refei: cardapioDeHoje.amoco.nomeDaRefei,
@@ -142,7 +148,7 @@ async function notifyUserCardapioDoDia(de) {
     };
   }
 
-  if (de === "jantar") {
+  if (de === 2) {
     jantar = {
       isJanter: true,
       refei: cardapioDeHoje.jantar.nomeDaRefei,
