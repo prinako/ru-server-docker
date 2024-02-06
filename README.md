@@ -1,6 +1,6 @@
 # RU Server Docker
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/prinako/ru-server-docker/Build%20and%20Push%20Docker%20Image?label=Docker%20Build)](https://github.com/prinako/ru-server/actions/workflows/docker-image.yml)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/prinako/ru-server-docker/Build%20and%20Push%20Docker%20Image?label=Docker%20Build)](https://github.com/prinako/ru-server-docker/actions/workflows/docker-image.yml)
 ![Licença](https://img.shields.io/github/license/prinako/ru-server-docker)
 
 ## Visão Geral
