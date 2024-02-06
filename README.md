@@ -5,7 +5,7 @@
 
 ## Visão Geral
 
-Este repositório contém o Dockerfile necessário para construir e executar o servidor do RU (Restaurante Universitário) da Universidade Federal do Pará.
+Este repositório contém o Dockerfile necessário para construir e executar o servidor do RU (Restaurante Universitário) da Universidade Federal do Pará para o aplicativo RU Digital UFPA.
 
 ## Pré-requisitos
 
