@@ -11,10 +11,12 @@ let dateObj = new Date();
  * @param {Function} next - The callback function.
  * @returns {Promise<void>} - A promise that resolves when the cardápio data is retrieved.
  */
-async function getAllCardapio (next){
+async function getAllCardapio() {
     const siteRuUrl = process.env.RUSITE;
+    const cardapios = [];
+
     try {
-        const {data} = await axios({
+        const { data } = await axios({
             method: 'get',
             url: siteRuUrl,
         })
@@ -30,30 +32,32 @@ async function getAllCardapio (next){
 
         $(memSelector).each((parentIdx, parentElem) => {
 
-             let keyIdx = 0
-             const cardapioObj = {}
+            let keyIdx = 0
+            const cardapioObj = {}
 
-            if (parentIdx){
+            if (parentIdx) {
                 $(parentElem).children().each((childIdx, childElem) => {
 
                     let tdValue = $(childElem).text()
                     const p = tdValue.replace(/\t\s+/g, '').trim().split(/[;\n:]/)
-                
+
                     cardapioObj[keys[keyIdx]] = p
                     cardapioObj.dia[0] = cardapioObj.dia[0].replace('/', '-')
                     keyIdx++
                 })
-                cardapioObj.dia[1] = (cardapioObj.dia[1]).replace('/', '-')+`-${dateObj.getFullYear()}`
-                
+                cardapioObj.dia[1] = (cardapioObj.dia[1]).replace('/', '-') + `-${dateObj.getFullYear()}`
+
                 // console.log(cardapioObj);
-                return next(cardapioObj);
+                cardapios.push(cardapioObj)
+                // return next(cardapioObj);
             }
-            
         });
+        return cardapios;
     }
     catch (err) {
         console.log(err);
+        return [];
     }
 }
 
-module.exports = {getAllCardapio,};
+module.exports = { getAllCardapio };

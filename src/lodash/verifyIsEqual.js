@@ -3,77 +3,87 @@
 const isEqual = require("lodash/isEqual");
 const { findCardapioByDate } = require("../databases/querys");
 
-// Defina uma função assíncrona chamada isItNeedToNotify.
-async function isItNeedToNotify(oldCardapio, date, next) {
-  // Verifique se o objeto oldCardapio não é nulo.
-  if (oldCardapio != null) {
-    // Busque um novo objeto cardapio para a data fornecida usando a função findCardapioByDate.
-    const newCardapio = await findCardapioByDate(date, (e) => e);
 
-    // Compare a propriedade nomeDaRefei do amoço no oldCardapio e no newCardapio.
+/**
+ * Compares the old and new cardapio data and determines if a notification is needed.
+ *
+ * @param {Object} oldCardapio - The old cardapio data retrieved from the database.
+ * @param {Object} newCardapio - The new cardapio data retrieved from the ru site.
+ * @param {Function} next - The callback function to be called with the comparison results.
+ * @return {Promise<void>} A promise that resolves when the comparison is complete.
+ */
+async function isItNeedToNotify(oldCardapio, newCardapio, next) {
+  // Check if oldCardapio is not null.
+  if (oldCardapio != null && newCardapio != null) {
+
+    // Compare the nomeDaRefei property of the amoco in oldCardapio and newCardapio.
     const isAlmoco = isEqual(
-      oldCardapio.amoco.nomeDaRefei,
-      newCardapio.amoco.nomeDaRefei
+      oldCardapio[0].amoco_nomeDaRefei,
+      newCardapio[0].amoco_nomeDaRefei
     );
 
-    // Compare a propriedade nomeDaRefei do jantar no oldCardapio e no newCardapio.
+    // Compare the nomeDaRefei property of the jantar in oldCardapio and newCardapio.
     const isJantar = isEqual(
-      oldCardapio.jantar.nomeDaRefei,
-      newCardapio.jantar.nomeDaRefei
+      oldCardapio[0].jantar_nomeDaRefei,
+      newCardapio[0].jantar_nomeDaRefei
     );
 
-    // Compare a propriedade nomeDaRefei diretamente no oldCardapio e no newCardapio.
-    // const nomeDaRefei = isEqual(
-    //   oldCardapio.nomeDaRefei,
-    //   newCardapio.nomeDaRefei
-    // );
-
-    // console.log(oldCardapio.amoco.nomeDaRefei);
-
-    // Declare variáveis para armazenar informações sobre o almoço e o jantar.
+    // Declare variables to store information about the almoco and jantar.
     let almoco;
     let jantar;
 
-    // Verifique se é necessário fazer algo para o almoço (isAlmoco é uma variável que deve ser definida anteriormente).
+    // Check if something needs to be done for the almoco.
     if (!isAlmoco) {
-      // Se for necessário fazer algo para o almoço, obtenha o nome antigo e novo do cardápio.
-      const old = oldCardapio.amoco.nomeDaRefei;
-      const novo = newCardapio.amoco.nomeDaRefei;
+      // If it is necessary to do something for the almoco, get the old and new cardapio names.
+      const old =  oldCardapio[0].amoco_nomeDaRefei;
+      const novo = newCardapio[0].amoco_nomeDaRefei;
 
-      // Crie o objeto almoco com informações sobre o almoço.
+      // Create the almoco object with information about the almoco.
       almoco = {
-        isAlmocoNeed: true, // Indica que é necessário fazer algo para o almoço.
-        oldAlmoco: old, // Nome antigo do almoço.
-        newAlmoco: novo, // Nome novo do almoço.
+        isAlmocoNeed: true, // Indicates that something needs to be done for the almoco.
+        oldAlmoco: old, // Old cardapio name.
+        newAlmoco: novo, // New cardapio name.
       };
     } else {
-      // Se não for necessário fazer nada para o almoço, crie um objeto almoco com isAlmocoNeed definido como falso.
+      // If nothing needs to be done for the almoco, create an almoco object with isAlmocoNeed set to false.
       almoco = {
-        isAlmocoNeed: false, // Indica que não é necessário fazer nada para o almoço.
+        isAlmocoNeed: false, // Indicates that nothing needs to be done for the almoco.
       };
     }
 
-    // Repita o mesmo processo para o jantar.
+    // Repeat the same process for the jantar.
     if (!isJantar) {
-      const old = oldCardapio.jantar.nomeDaRefei;
-      const novo = newCardapio.jantar.nomeDaRefei;
+      const old = oldCardapio[0].jantar_nomeDaRefei;
+      const novo = newCardapio[0].jantar_nomeDaRefei;
 
       jantar = {
-        isJantarNeed: true, // Indica que é necessário fazer algo para o jantar.
-        oldJantar: old, // Nome antigo do jantar.
-        newJantar: novo, // Nome novo do jantar.
+        isJantarNeed: true, // Indicates that something needs to be done for the jantar.
+        oldJantar: old, // Old meal name.
+        newJantar: novo, // New meal name.
       };
     } else {
       jantar = {
-        isJantarNeed: false, // Indica que não é necessário fazer nada para o jantar.
+        isJantarNeed: false, // Indicates that nothing needs to be done for the jantar.
       };
     }
 
-    // Retorne um objeto contendo os resultados das três comparações
-    // (almoco, jantar, nomeDaRefei) para a função next.
+    // Return an object with the results of the three comparisons (almoco, jantar, nomeDaRefei)
+    // to the next function.
     return next({ almoco, jantar });
   }
 }
 
+/**
+ * Compares two sets of data and returns a boolean indicating if they are equal.
+ *
+ * @param {Object} dataFromDB - The data retrieved from the database.
+ * @param {Object} dataFromRuSite - The data retrieved from the ru site.
+ * @return {Promise<boolean>} A boolean indicating if the data is equal.
+ */
+async function isDataEqual(dataFromDB, dataFromRuSite) {
+  // Use the lodash isEqual function to compare the two sets of data.
+  return isEqual(dataFromDB, dataFromRuSite);
+}
+
 // Exporte a função isItNeedToNotify para uso em outros módulos.
-module.exports = { isItNeedToNotify };
+module.exports = { isItNeedToNotify, isDataEqual };

@@ -19,6 +19,8 @@ const {
   novoCardapioDaSemana,
 } = require("../firebase/push-notification");
 
+
+
 router.get("/", async (req, res) => {
   res.send("ok");
 });
@@ -96,6 +98,9 @@ router.get("/news", async (req, res)=>{
   const resolute = await getNews((doc)=>doc);
   res.json(resolute);
 })
+
+
+
 
 /**
  * Updates the cardápio (menu) and invokes a callback function.

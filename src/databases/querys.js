@@ -1,5 +1,5 @@
 
-const {Cardapio, Reclama, Feedback, UsersTokens, News } = require("./schema");
+const { Cardapio, UsersTokens, News } = require("./schema");
 
 /**
  * Posts cardápio (menu) data to the database and invokes a callback function.
@@ -9,58 +9,47 @@ const {Cardapio, Reclama, Feedback, UsersTokens, News } = require("./schema");
  * @param {Function} next - The callback function.
  * @returns {Promise<void>} - A promise that resolves when the cardápio data is posted.
  */
-async function postCardapio(dados, next) {
-  const novoCadapio = new Cardapio({
-    dia: dados.dia[0],
-    data: dados.dia[1],
-    amoco: {
-      refeicao: "ALMOÇO",
-      nomeDaRefei: dados.almoco[0],
-      ingredintes: {
-        amo1: dados.almoco[3],
-        amo2: dados.almoco[4],
-        amo3: dados.almoco[5],
-        amo4: dados.almoco[6],
-        amo5: dados.almoco[7],
+async function postCardapio(menu, next) {
+  const newData = [];
+  menu.forEach(async (dados) => {
+    const novoCadapio = new Cardapio({
+      dia: dados.dia[0],
+      data: dados.dia[1],
+      amoco: {
+        refeicao: "ALMOÇO",
+        nomeDaRefei: dados.almoco[0],
+        ingredintes: {
+          amo1: dados.almoco[3],
+          amo2: dados.almoco[4],
+          amo3: dados.almoco[5],
+          amo4: dados.almoco[6],
+          amo5: dados.almoco[7],
+        },
+        vegetariano1: dados.almoco[2],
       },
-      vegetariano1: dados.almoco[2],
-    },
-    jantar: {
-      refeicao: "JANTAR",
-      nomeDaRefei: dados.jantar[0],
-      ingredintes: {
-        jan1: dados.jantar[3],
-        jan2: dados.jantar[4],
-        jan3: dados.jantar[5],
-        jan4: dados.jantar[6],
-        jan5: dados.jantar[7],
+      jantar: {
+        refeicao: "JANTAR",
+        nomeDaRefei: dados.jantar[0],
+        ingredintes: {
+          jan1: dados.jantar[3],
+          jan2: dados.jantar[4],
+          jan3: dados.jantar[5],
+          jan4: dados.jantar[6],
+          jan5: dados.jantar[7],
+        },
+        vegetariano2: dados.jantar[2],
       },
-      vegetariano2: dados.jantar[2],
-    },
-  });
+    });
+    newData.push(novoCadapio);
 
-  const resolute = await novoCadapio.save((err, doc) => {
-    if (err) {
-      //updateCardapio(dados, next);
-      //console.log(err);
-      return err;
-    }
-    return doc;
   });
-  // console.log("its not equal");
-  return next(resolute);
-}
-
-/**
- * Retrieves all reclame aqui data and invokes a callback function with the result.
- * 
- * @async
- * @param {Function} next - The callback function.
- * @returns {Promise<void>} - A promise that resolves with all reclame aqui data.
- */
-async function todosOsReclameAqui(next) {
-  const rs = await Reclama.find().clone();
-  return next(rs);
+  try {
+    await Cardapio.insertMany(newData);
+    return next(true);
+  } catch (error) {
+    // console.log(error);
+    return next(false);
+  }
 }
 
 /**
@@ -142,6 +131,48 @@ async function updateCardapio(dados, next) {
   //return next(duc);
 }
 
+async function updateByDateCardapio(date, dado, next) {
+  const dados = dado[0];
+
+  const toUpdate = {
+    dia: dados.dia,
+    data: dados.data,
+    amoco: {
+      refeicao: "ALMOÇO",
+      nomeDaRefei: dados.almoco_nomeDaRefei,
+      ingredintes: {
+        amo1: dados.almoco_amo1,
+        amo2: dados.almoco_amo2,
+        amo3: dados.almoco_amo3,
+        amo4: dados.almoco_amo4,
+        amo5: dados.almoco_amo5,
+      },
+      vegetariano1: dados.almoco_vegetariano,
+    },
+    jantar: {
+      refeicao: "JANTAR",
+      nomeDaRefei: dados.jantar_nomeDaRefei,
+      ingredintes: {
+        jan1: dados.jantar_jan1,
+        jan2: dados.jantar_jan2,
+        jan3: dados.jantar_jan3,
+        jan4: dados.jantar_jan4,
+        jan5: dados.jantar_jan5,
+      },
+      vegetariano2: dados.jantar_vegetariano,
+    },
+  };
+
+  // console.log(toUpdate);
+  await Cardapio.findOneAndUpdate(
+    { data: date },
+    toUpdate,
+    { upsert: true },
+  ).clone();
+  return next(true);
+  //return next(duc);
+}
+
 /**
  * Posts a user's token.
  * 
@@ -184,33 +215,6 @@ async function getAllUsersTokens(next) {
 }
 
 /**
- * Creates a new reclamação (complaint) in the system.
- * 
- * @async
- * @param {Object} req - The request object.
- * @param {Object} res - The response object.
- * @returns {Promise<void>} - A promise that resolves when the reclamação is created.
- */
-async function crioReclamaAqui(req, res) {
-  const { nome, email, curso, setor, msg } = req.body;
-  const newReclamaAqui = new Reclama({
-    nome: nome,
-    email: email,
-    curso: curso,
-    setor: setor,
-    msg: msg,
-  });
-
-  try {
-    await newReclamaAqui.save().then((e) => {
-      return res.status(200).json({ msy: "ok" });
-    });
-  } catch (err) {
-    return res.status(404).json({ msy: "ok" });
-  }
-}
-
-/**
  * Drops a collection if a certain condition is met.
  * 
  * @async
@@ -226,7 +230,7 @@ async function dropCollection(next) {
 
   if (isToBeDrop > 6) {
     // notify all users
-  //  await novoCardapioDaSemana();
+    //  await novoCardapioDaSemana();
     // drop collection
     await Cardapio.collection
       .drop()
@@ -238,31 +242,6 @@ async function dropCollection(next) {
 }
 
 /**
- * Creates a new feedback in the system.
- * 
- * @async
- * @param {Object} req - The request object.
- * @param {Object} res - The response object.
- * @returns {Promise<void>} - A promise that resolves when the feedback is created.
- */
-async function crioFeedback(req, res) {
-  const { nome, email, msg } = req.body;
-  const newFeedback = new Feedback({
-    nome: nome,
-    email: email,
-    msg: msg,
-  });
-
-  try {
-    await newFeedback.save().then((e) => {
-      return res.status(200).json({ msg: "ok" });
-    });
-  } catch (err) {
-    return res.status(404).json({ msg: "ok" });
-  }
-}
-
-/**
  * Posts a new news article.
  * 
  * @async
@@ -270,22 +249,22 @@ async function crioFeedback(req, res) {
  * @param {Object} res - The response object.
  * @returns {Promise<void>} - A promise that resolves when the news article is posted.
  */
-async function postNews(req, res){
+async function postNews(req, res) {
   // console.log(req.body);
-  const { imageUrl, msg,isImage,title,textColor} = req.body;
+  const { imageUrl, msg, isImage, title, textColor } = req.body;
   const newNews = new News({
-    title:title,
+    title: title,
     imageUrl: imageUrl,
     msg: msg,
-    isImage:isImage,
-    textColor:textColor,
+    isImage: isImage,
+    textColor: textColor,
   });
   try {
-    await newNews.save().then((doc)=>{
+    await newNews.save().then((doc) => {
       // console.log(e);
-      return res.status(200).json({msg:"ok"})
+      return res.status(200).json({ msg: "ok" })
     })
-  }catch (err){
+  } catch (err) {
     console.log(err);
     return res.status(404).json({ msg: "cant post new News" });
   }
@@ -298,22 +277,20 @@ async function postNews(req, res){
  * @param {Function} next - The callback function.
  * @returns {Promise<void>} - A promise that resolves with all news articles.
  */
-async function getNews(next){
+async function getNews(next) {
   const res = await News.find().clone();
   return next(res);
 }
 
 module.exports = {
   postCardapio,
-  todosOsReclameAqui,
   todosOsCardapio,
   findCardapioByDate,
-  crioReclamaAqui,
-  crioFeedback,
   updateCardapio,
   dropCollection,
   postUsersTokens,
   getAllUsersTokens,
   postNews,
   getNews,
+  updateByDateCardapio,
 };
