@@ -13,7 +13,7 @@ COPY package*.json ./
 RUN npm install --omit=dev
 
 # Copy the source code files
-COPY /src/* ./
+COPY /src ./
 
 # Stage 2: Final image
 # This stage creates the final image with the application.
@@ -44,4 +44,4 @@ COPY --from=build /app ./
 VOLUME [ "/app/DB" ]
 
 # Set the default command to run the application
-CMD [ "node", "server.js" ]
+CMD [ "node", "src/server.js" ]
