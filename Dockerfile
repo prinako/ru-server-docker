@@ -22,4 +22,4 @@ COPY --from=build /usr/src/app ./
 
 VOLUME [ "DB" ]
 
-CMD [ "node", "server.js" ]
+CMD [ "node", "src/server.js" ]
