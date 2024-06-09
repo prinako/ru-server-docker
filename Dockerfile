@@ -15,8 +15,6 @@ RUN npm install --omit=dev
 # Copy the source code files
 COPY /src/* ./
 
-RUN mkdir -p DB
-
 # Stage 2: Final image
 # This stage creates the final image with the application.
 # It sets the timezone and exposes the DB volume.
@@ -33,6 +31,8 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Set the working directory
 WORKDIR /app
+
+RUN mkdir -p /app/DB
 
 # Copy the node_modules directory from the build stage
 COPY --from=build /app/node_modules ./node_modules
