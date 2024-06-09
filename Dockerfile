@@ -20,6 +20,6 @@ WORKDIR /usr/src/app
 COPY --from=build /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app ./
 
-VOLUME [ "DB" ]
+VOLUME [ "./DB" ]
 
 CMD [ "node", "src/server.js" ]
