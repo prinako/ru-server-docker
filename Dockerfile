@@ -15,8 +15,7 @@ RUN npm install --omit=dev
 # Copy the source code files
 COPY /src/* ./
 
-# Copy the DB directory
-COPY /DB ./DB
+RUN mkdir -p DB
 
 # Stage 2: Final image
 # This stage creates the final image with the application.
