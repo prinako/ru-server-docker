@@ -44,10 +44,10 @@ async function insertIntoVerifyDB(newCardapioSemana, next) {
             // Prepare a parameterized statement for efficient bulk insertion
             await new Promise((resolve, reject) => {
                 varidateDB.run('BEGIN TRANSACTION', (err) => {
-                  if (err) reject(err);
-                  else resolve();
+                    if (err) reject(err);
+                    else resolve();
                 });
-              });
+            });
 
             const stmt = varidateDB.prepare(`
                 INSERT INTO cardapio (dia, data, almoco_nomeDaRefei, almoco_amo1, almoco_amo2, almoco_amo3, almoco_amo4, almoco_amo5, almoco_vegetariano, jantar_nomeDaRefei, jantar_jan1, jantar_jan2, jantar_jan3, jantar_jan4, jantar_jan5, jantar_vegetariano)
@@ -86,7 +86,16 @@ async function insertIntoVerifyDB(newCardapioSemana, next) {
 
     } catch (error) {
         console.log(error);
-        return false;
+        await new Promise((resolve, reject) => {
+            varidateDB.run('ROLLBACK TRANSACTION', (err) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            });
+        })
+        return next(false);
     }
 }
 

@@ -34,23 +34,22 @@ sqliteDB.serialize(() => {
  * @param {Object} newCardapioSemana - The cardápio data to be inserted.
  * @returns {Promise<void>} - A promise that resolves when the cardápio data is inserted.
  */
-async function insertIntoDB(newCardapioSemana) {
-    sqliteDB.run(`DELETE FROM cardapio`);
-
-    await formatData(newCardapioSemana, async (cardapios) => {
+async function insertIntoDB(newCardapioSemana, next) {
+    // sqliteDB.run(`DELETE FROM cardapio`);
+    try {
         await formatData(newCardapioSemana, async (cardapios) => {
             // Prepare a parameterized statement for efficient bulk insertion
             await new Promise((resolve, reject) => {
                 sqliteDB.run('BEGIN TRANSACTION', (err) => {
-                  if (err) reject(err);
-                  else resolve();
+                    if (err) reject(err);
+                    else resolve();
                 });
-              });
+            });
 
             const stmt = sqliteDB.prepare(`
-                INSERT INTO cardapio (dia, data, almoco_nomeDaRefei, almoco_amo1, almoco_amo2, almoco_amo3, almoco_amo4, almoco_amo5, almoco_vegetariano, jantar_nomeDaRefei, jantar_jan1, jantar_jan2, jantar_jan3, jantar_jan4, jantar_jan5, jantar_vegetariano)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `);
+                    INSERT INTO cardapio (dia, data, almoco_nomeDaRefei, almoco_amo1, almoco_amo2, almoco_amo3, almoco_amo4, almoco_amo5, almoco_vegetariano, jantar_nomeDaRefei, jantar_jan1, jantar_jan2, jantar_jan3, jantar_jan4, jantar_jan5, jantar_vegetariano)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    `);
 
             // Insert multiple rows using the prepared statement
             await new Promise((resolve, reject) => {
@@ -65,7 +64,6 @@ async function insertIntoDB(newCardapioSemana) {
                     });
                 })
             });
-
             stmt.finalize();
         });
 
@@ -80,11 +78,23 @@ async function insertIntoDB(newCardapioSemana) {
                 }
             });
         });
+        return next(true);
+    } catch (err) {
+        console.log(err);
+        console.log("Erro ao inserir cardápio");
+        // Handle the error, for example, rollback the transaction (if possible).
+        await new Promise((resolve, reject) => {
+            sqliteDB.run('ROLLBACK TRANSACTION', (err) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            });
+        });
+        return next(false);
+    }
 
-        return ;
-
-    });
-    return true;
 }
 
 /**
@@ -137,35 +147,37 @@ async function findOneByDate(date, next) {
  * @returns {Promise<void>} - A promise that resolves when the cardápio data is updated.
  */
 async function findAndUpdate(date, dado) {
+    // Get the cardápio data for the given date
+    try{
 
-    const dados = dado[0];
-    // Begin a transaction
-    await new Promise((resolve, reject) => {
-        sqliteDB.run('BEGIN TRANSACTION', (err) => {
-          if (err) reject(err);
-          else resolve();
+        const dados = dado[0];
+        // Begin a transaction
+        await new Promise((resolve, reject) => {
+            sqliteDB.run('BEGIN TRANSACTION', (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
         });
-      });
-
-    // Execute a SQL query to find a cardápio by date and update its data
-    // The SQL query updates all columns from the cardapio table where the data column matches the given date
-    // The result is then passed to the callback function
-    sqliteDB.run(`UPDATE cardapio 
-        SET almoco_nomeDaRefei = '${dados.almoco_nomeDaRefei}',
-        almoco_amo1 = '${dados.almoco_amo1}',
-        almoco_amo2 = '${dados.almoco_amo2}',
-        almoco_amo3 = '${dados.almoco_amo3}',
-        almoco_amo4 = '${dados.almoco_amo4}',
-        almoco_amo5 = '${dados.almoco_amo5}',
-        almoco_vegetariano = '${dados.almoco_vegetariano}',
-        jantar_nomeDaRefei = '${dados.jantar_nomeDaRefei}',
-        jantar_jan1 = '${dados.jantar_jan1}',
-        jantar_jan2 = '${dados.jantar_jan2}',
-        jantar_jan3 = '${dados.jantar_jan3}',
-        jantar_jan4 = '${dados.jantar_jan4}',
-        jantar_jan5 = '${dados.jantar_jan5}',
-        jantar_vegetariano = '${dados.jantar_vegetariano}'
-        WHERE data = '${date}'`, (err, rows) => {
+    
+        // Execute a SQL query to find a cardápio by date and update its data
+        // The SQL query updates all columns from the cardapio table where the data column matches the given date
+        // The result is then passed to the callback function
+        sqliteDB.run(`UPDATE cardapio 
+            SET almoco_nomeDaRefei = '${dados.almoco_nomeDaRefei}',
+            almoco_amo1 = '${dados.almoco_amo1}',
+            almoco_amo2 = '${dados.almoco_amo2}',
+            almoco_amo3 = '${dados.almoco_amo3}',
+            almoco_amo4 = '${dados.almoco_amo4}',
+            almoco_amo5 = '${dados.almoco_amo5}',
+            almoco_vegetariano = '${dados.almoco_vegetariano}',
+            jantar_nomeDaRefei = '${dados.jantar_nomeDaRefei}',
+            jantar_jan1 = '${dados.jantar_jan1}',
+            jantar_jan2 = '${dados.jantar_jan2}',
+            jantar_jan3 = '${dados.jantar_jan3}',
+            jantar_jan4 = '${dados.jantar_jan4}',
+            jantar_jan5 = '${dados.jantar_jan5}',
+            jantar_vegetariano = '${dados.jantar_vegetariano}'
+            WHERE data = '${date}'`, (err, rows) => {
             if (err) {
                 console.error(err);
                 return;
@@ -173,19 +185,32 @@ async function findAndUpdate(date, dado) {
                 console.log("Cardápio inserido com sucesso");
             }
         });
-
-    // Commit the transaction
-    await new Promise((resolve, reject) => {
-        sqliteDB.run('COMMIT TRANSACTION', (err) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve();
-            }
+    
+        // Commit the transaction
+        await new Promise((resolve, reject) => {
+            sqliteDB.run('COMMIT TRANSACTION', (err) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            });
         });
-    });
-
-    return;
+    
+        return true;
+    }catch(err){
+        console.log(err);
+        await new Promise((resolve, reject) => {
+            sqliteDB.run('ROLLBACK TRANSACTION', (err) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            });
+        });
+        return false;
+    }
 }
 
 module.exports = { insertIntoDB, getAllCardapioFromSQLite, findOneByDate, findAndUpdate };

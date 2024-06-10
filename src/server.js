@@ -17,6 +17,7 @@ const {
 } = require("./firebase/push-notification");
 const { insertIntoDB, findOneByDate, findAndUpdate } = require("./databases/sqlite");
 const { insertIntoVerifyDB, findOneByDateInVerifyDB } = require("./databases/verifyDB");
+const { drop } = require("lodash");
 
 const clientOptions = { serverApi: { version: '1', strict: true, deprecationErrors: true } };
 
@@ -131,27 +132,32 @@ async function update(callback) {
 main();
 async function main() {
   const ruSiteData = await getAllCardapio();
-  await contectDB(async (next) => {
+  await insertIntoDB(ruSiteData, async (next) => {
     if (next) {
-      await postCardapio(ruSiteData, async (next) => {
+      await contectDB(async (next) => {
         if (next) {
-          await DBset(ruSiteData);
+          await postCardapio(ruSiteData, async (next) => {
+            if (next) {
+              await DBset(ruSiteData);
+            }
+          });
         }
+        await disconnetDB();
       });
     }
-    await disconnetDB();
   });
-  await insertIntoDB(ruSiteData);
   return;
 }
 
 async function DBset(cardapio) {
   const AllCardapio = await todosOsCardapio(async (next) => next);
   if (AllCardapio.length > 6) {
+    console.log("DB set");
     await dropCollection(async next => {
       if (next) {
         await postCardapio(cardapio, async (next) => {
           if (next) {
+            console.log("novo cardapio criado");
             await novoCardapioDaSemana();
           }
         });
