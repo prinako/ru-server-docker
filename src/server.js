@@ -17,7 +17,6 @@ const {
 } = require("./firebase/push-notification");
 const { insertIntoDB, findOneByDate, findAndUpdate } = require("./databases/sqlite");
 const { insertIntoVerifyDB, findOneByDateInVerifyDB } = require("./databases/verifyDB");
-const { drop } = require("lodash");
 
 const clientOptions = { serverApi: { version: '1', strict: true, deprecationErrors: true } };
 
@@ -59,7 +58,7 @@ let options = {
 };
 
 cron.schedule(
-  "* 9-12 * * 1-2",
+  "/30 9-12 * * 1-2",
   async () => {
     await main();
   },
