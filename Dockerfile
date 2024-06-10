@@ -20,6 +20,8 @@ COPY . .
 # It sets the timezone and exposes the DB volume.
 FROM node:20-alpine
 
+LABEL org.opencontainers.image.description ru-server-new-docker
+
 # Install the tzdata package
 RUN apk add --no-cache tzdata
 
