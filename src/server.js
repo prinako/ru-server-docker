@@ -58,7 +58,7 @@ let options = {
 };
 
 cron.schedule(
-  "/30 9-12 * * 1-2",
+  "*/30 9-12 * * 1-2",
   async () => {
     await main();
   },
