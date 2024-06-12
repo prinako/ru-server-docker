@@ -66,7 +66,7 @@ cron.schedule(
 );
 
 cron.schedule(
-  "*/20 * * * 1-5",
+  "*/20 8-19 * * 1-5",
   async () => {
     await update();
   },
