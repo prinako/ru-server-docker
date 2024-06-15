@@ -38,6 +38,9 @@ async function insertIntoDB(newCardapioSemana, next) {
     // sqliteDB.run(`DELETE FROM cardapio`);
     try {
         await formatData(newCardapioSemana, async (cardapios) => {
+            if(cardapios === false) {
+                return next(false);
+            }
             // Prepare a parameterized statement for efficient bulk insertion
             await new Promise((resolve, reject) => {
                 sqliteDB.run('BEGIN TRANSACTION', (err) => {
@@ -80,8 +83,7 @@ async function insertIntoDB(newCardapioSemana, next) {
         });
         return next(true);
     } catch (err) {
-        console.log(err);
-        console.log("Erro ao inserir cardápio");
+        console.log(`Erro ao inserir cardápio: ${err.message}`);
         // Handle the error, for example, rollback the transaction (if possible).
         await new Promise((resolve, reject) => {
             sqliteDB.run('ROLLBACK TRANSACTION', (err) => {
@@ -199,7 +201,7 @@ async function findAndUpdate(date, dado) {
     
         return true;
     }catch(err){
-        console.log(err);
+        console.log(`Erro ao atualizar cardápio: ${err.message}`);
         await new Promise((resolve, reject) => {
             sqliteDB.run('ROLLBACK TRANSACTION', (err) => {
                 if (err) {

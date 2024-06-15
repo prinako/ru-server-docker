@@ -3,6 +3,8 @@ require("dotenv").config();
 const mongoose = require('mongoose');
 const cron = require("node-cron");
 
+const getFromSiteCardapio = require("./cardapio/getCardapio");
+
 const { isItNeedToNotify, isDataEqual } = require("./lodash/verifyIsEqual");
 const {
   postCardapio,
@@ -10,12 +12,14 @@ const {
   dropCollection,
   updateByDateCardapio,
 } = require("./databases/querys");
-const { getAllCardapio } = require("./cardapio/getCardapio");
+
 const {
   notifyUserCardapioDeHojeMudou,
   novoCardapioDaSemana,
 } = require("./firebase/push-notification");
+
 const { insertIntoDB, findOneByDate, findAndUpdate } = require("./databases/sqlite");
+
 const { insertIntoVerifyDB, findOneByDateInVerifyDB } = require("./databases/verifyDB");
 
 const clientOptions = { serverApi: { version: '1', strict: true, deprecationErrors: true } };
@@ -72,6 +76,13 @@ cron.schedule(
   },
   options
 );
+// cron.schedule(
+//   "*/1 * * * * *",
+//   async () => {
+//     await update();
+//   },
+//   options
+// );
 
 /**
  * Updates the cardápio (menu) and invokes a callback function.
@@ -80,27 +91,35 @@ cron.schedule(
  * @param {Function} callback - The callback function.
  * @returns {Promise<void>} - A promise that resolves when the update is complete.
  */
-async function update(callback) {
-  let dataFromRuSite = await getAllCardapio(next => next);
+async function update() {
+  console.log("Updating cardapio");
+  const dataFromRuSite = await getFromSiteCardapio();
+
+  if(dataFromRuSite === false) {
+    return false;
+  }
 
   await insertIntoVerifyDB(dataFromRuSite, async (verify) => {
     if (await verify === true) {
       const date = new Date();
-
       let toDayDate;
-
+      
       if (date.getDate().toString().length === 1) {
         toDayDate = `0${date.getDate() - 1}-0${date.getMonth() + 1
-          }-${date.getFullYear()}`;
+        }-${date.getFullYear()}`;
       } else {
         toDayDate = `${date.getDate() - 1}-${date.getMonth() + 1
-          }-${date.getFullYear()}`;
+        }-${date.getFullYear()}`;
       }
-
+      
       await findOneByDateInVerifyDB(toDayDate, async (verifyData) => {
         await findOneByDate(toDayDate, async (oldData) => {
+          
+          // verify if verifyData and oldData are not empty
+          if(verifyData.length === 0 || oldData.length === 0) return;
+          
           const isEqual = await isDataEqual(oldData, verifyData);
-
+          
           if (!isEqual) {
             // to update
             await findAndUpdate(toDayDate, verifyData);
@@ -126,11 +145,17 @@ async function update(callback) {
       });
     }
   });
+  return;
 }
 
 main();
 async function main() {
-  const ruSiteData = await getAllCardapio();
+  const ruSiteData = await getFromSiteCardapio();
+
+  if(ruSiteData === false) {
+    return false;
+  }
+
   await insertIntoDB(ruSiteData, async (next) => {
     if (next) {
       await contectDB(async (next) => {
@@ -148,6 +173,13 @@ async function main() {
   return;
 }
 
+/**
+ * Sets the database with the given cardapio if the number of cardapios is greater than 6.
+ *
+ * @async
+ * @param {Array} cardapio - The cardapio data to be set in the database.
+ * @return {Promise<void>} - A promise that resolves when the database is set.
+ */
 async function DBset(cardapio) {
   const AllCardapio = await todosOsCardapio(async (next) => next);
   if (AllCardapio.length > 6) {

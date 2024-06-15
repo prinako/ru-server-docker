@@ -11,15 +11,27 @@ let dateObj = new Date();
  * @param {Function} next - The callback function.
  * @returns {Promise<void>} - A promise that resolves when the cardápio data is retrieved.
  */
-async function getAllCardapio() {
-    const siteRuUrl = process.env.RUSITE;
+async function getFromSiteCardapio() {
+    // ru server base url
+    const baseURL = process.env.RUBASESITE;
+
+    // ru server subnet
+    const subnet = process.env.RUSUBNET;
+
     const cardapios = [];
 
+    const api = await axios.create({
+        baseURL: baseURL,
+        headers: {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/237.84.2.178 Safari/537.36',
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+            'Accept-Encoding': 'gzip, deflate, br',
+        }
+    });
+
     try {
-        const { data } = await axios({
-            method: 'get',
-            url: siteRuUrl,
-        })
+        const { data } = await api.get(subnet);
 
         const $ = cheerio.load(data)
         const memSelector = '#content-section > div:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr'
@@ -47,17 +59,16 @@ async function getAllCardapio() {
                 })
                 cardapioObj.dia[1] = (cardapioObj.dia[1]).replace('/', '-') + `-${dateObj.getFullYear()}`
 
-                // console.log(cardapioObj);
                 cardapios.push(cardapioObj)
-                // return next(cardapioObj);
             }
         });
+
         return cardapios;
     }
     catch (err) {
-        console.log(err);
-        return [];
+        console.log(`Something went wrong! Status: ${err.response.status} and Status Text: ${err.response.statusText}`);
+        return false;
     }
 }
 
-module.exports = { getAllCardapio };
+module.exports = getFromSiteCardapio;

@@ -55,7 +55,6 @@ async function postCardapio(menu, next) {
 /**
  * Retrieves all cardápio (menu) data and invokes a callback function with the result.
  * 
- * @async
  * @param {Function} next - The callback function.
  * @returns {Promise<void>} - A promise that resolves with all cardápio data.
  */
