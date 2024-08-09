@@ -4,50 +4,55 @@ const { Cardapio, UsersTokens, News } = require("./schema");
 /**
  * Posts cardápio (menu) data to the database and invokes a callback function.
  * 
- * @async
- * @param {Object} dados - The cardápio data.
+ * @param {Array} newCardapio - The array of cardápio data to be inserted.
  * @param {Function} next - The callback function.
  * @returns {Promise<void>} - A promise that resolves when the cardápio data is posted.
  */
-async function postCardapio(menu, next) {
-  const newData = [];
-  menu.forEach(async (dados) => {
+async function postCardapio(newCardapio, next) {
+  // Array to store the new cardápio data
+  let newData = [];
+
+  // Iterate over each item in the newCardapio array
+  for (const dados of newCardapio) {
+    // Create a new Cardapio object for each item
     const novoCadapio = new Cardapio({
-      dia: dados.dia[0],
-      data: dados.dia[1],
-      amoco: {
-        refeicao: "ALMOÇO",
-        nomeDaRefei: dados.almoco[0],
-        ingredintes: {
+      dia: dados.dia[0], // Day of the week
+      data: dados.dia[1], // Date of the cardápio
+      almoco: { // Lunch menu
+        refeicao: "ALMOÇO", // Type of meal
+        nomeDaRefeicao: dados.almoco[0], // Name of the lunch menu
+        acompanhamento: { // Side dishes
           amo1: dados.almoco[3],
           amo2: dados.almoco[4],
           amo3: dados.almoco[5],
           amo4: dados.almoco[6],
           amo5: dados.almoco[7],
         },
-        vegetariano1: dados.almoco[2],
+        vegetarianoAlmoco: dados.almoco[2], // Vegetarian option for lunch
       },
-      jantar: {
-        refeicao: "JANTAR",
-        nomeDaRefei: dados.jantar[0],
-        ingredintes: {
+      jantar: { // Dinner menu
+        refeicao: "JANTAR", // Type of meal
+        nomeDaRefei: dados.jantar[0], // Name of the dinner menu
+        acompanhamento: { // Side dishes
           jan1: dados.jantar[3],
           jan2: dados.jantar[4],
           jan3: dados.jantar[5],
           jan4: dados.jantar[6],
           jan5: dados.jantar[7],
         },
-        vegetariano2: dados.jantar[2],
+        vegetarianoAlmoco: dados.jantar[2], // Vegetarian option for dinner
       },
     });
+    // Add the new cardápio object to the newData array
     newData.push(novoCadapio);
+  }
 
-  });
   try {
+    // Insert the new cardápio data into the database
     await Cardapio.insertMany(newData);
     return next(true);
   } catch (error) {
-    // console.log(error);
+    // If an error occurs, invoke the callback function with false
     return next(false);
   }
 }
@@ -58,7 +63,7 @@ async function postCardapio(menu, next) {
  * @param {Function} next - The callback function.
  * @returns {Promise<void>} - A promise that resolves with all cardápio data.
  */
-async function todosOsCardapio(next) {
+async function getAllCardapioFromDB(next) {
   const rs = await Cardapio.find().clone();
   return next(rs);
 }
@@ -76,101 +81,58 @@ async function findCardapioByDate(data, next) {
   return next(cardapio);
 }
 
+
+
 /**
- * Updates the cardápio (menu) data in the database and invokes a callback function.
+ * Finds a cardápio (menu) by date and updates the cardápio data with the given dados.
  * 
  * @async
- * @param {Object} dados - The cardápio data.
+ * @param {Object} cadapioUpdate - The cardápio data to update.
  * @param {Function} next - The callback function.
  * @returns {Promise<void>} - A promise that resolves when the cardápio data is updated.
  */
-async function updateCardapio(dados, next) {
+async function findOneCardapioByDateAndupdate(cadapioUpdate, next) {
+  // Construct the update object
   const toUpdate = {
-    dia: dados.dia[0],
-    data: dados.dia[1],
-    amoco: {
-      refeicao: "ALMOÇO",
-      nomeDaRefei: dados.almoco[0],
-      ingredintes: {
-        amo1: dados.almoco[3],
-        amo2: dados.almoco[4],
-        amo3: dados.almoco[5],
-        amo4: dados.almoco[6],
-        amo5: dados.almoco[7],
+    dia: cadapioUpdate.dia[0], // The day of the week
+    data: cadapioUpdate.dia[1], // The date of the menu
+    almoco: { // Lunch menu
+      refeicao: "ALMOÇO", // Type of meal
+      nomeDaRefeicao: cadapioUpdate.almoco[0], // Name of the lunch menu
+      acompanhamento: { // Side dishes
+        amo1: cadapioUpdate.almoco[3],
+        amo2: cadapioUpdate.almoco[4],
+        amo3: cadapioUpdate.almoco[5],
+        amo4: cadapioUpdate.almoco[6],
+        amo5: cadapioUpdate.almoco[7],
       },
-      vegetariano1: dados.almoco[2],
+      vegetarianoAlmoco: cadapioUpdate.almoco[2], // Vegetarian option for lunch
     },
-    jantar: {
-      refeicao: "JANTAR",
-      nomeDaRefei: dados.jantar[0],
-      ingredintes: {
-        jan1: dados.jantar[3],
-        jan2: dados.jantar[4],
-        jan3: dados.jantar[5],
-        jan4: dados.jantar[6],
-        jan5: dados.jantar[7],
+    jantar: { // Dinner menu
+      refeicao: "JANTAR", // Type of meal
+      nomeDaRefei: cadapioUpdate.jantar[0], // Name of the dinner menu
+      acompanhamento: { // Side dishes
+        jan1: cadapioUpdate.jantar[3],
+        jan2: cadapioUpdate.jantar[4],
+        jan3: cadapioUpdate.jantar[5],
+        jan4: cadapioUpdate.jantar[6],
+        jan5: cadapioUpdate.jantar[7],
       },
-      vegetariano2: dados.jantar[2],
-    },
-  };
-  // console.log(toUpdate);
-  await Cardapio.findOneAndUpdate(
-    { data: dados.dia[1] },
-    toUpdate,
-    { upsert: true },
-    (err, duc) => {
-      if (err) {
-        console.log(err);
-        return false;
-      }
-      return true;
-    }
-  ).clone();
-  return;
-  //return next(duc);
-}
-
-async function updateByDateCardapio(date, dado, next) {
-  const dados = dado[0];
-
-  const toUpdate = {
-    dia: dados.dia,
-    data: dados.data,
-    amoco: {
-      refeicao: "ALMOÇO",
-      nomeDaRefei: dados.almoco_nomeDaRefei,
-      ingredintes: {
-        amo1: dados.almoco_amo1,
-        amo2: dados.almoco_amo2,
-        amo3: dados.almoco_amo3,
-        amo4: dados.almoco_amo4,
-        amo5: dados.almoco_amo5,
-      },
-      vegetariano1: dados.almoco_vegetariano,
-    },
-    jantar: {
-      refeicao: "JANTAR",
-      nomeDaRefei: dados.jantar_nomeDaRefei,
-      ingredintes: {
-        jan1: dados.jantar_jan1,
-        jan2: dados.jantar_jan2,
-        jan3: dados.jantar_jan3,
-        jan4: dados.jantar_jan4,
-        jan5: dados.jantar_jan5,
-      },
-      vegetariano2: dados.jantar_vegetariano,
+      vegetarianoAlmoco: cadapioUpdate.jantar[2], // Vegetarian option for dinner
     },
   };
 
-  // console.log(toUpdate);
+  // Find and update the cardápio by date
   await Cardapio.findOneAndUpdate(
-    { data: date },
-    toUpdate,
-    { upsert: true },
+    { data: cadapioUpdate.dia[1] }, // The date to search for
+    toUpdate, // The update object
+    { upsert: true }, // Create a new document if the date doesn't exist
   ).clone();
-  return next(true);
-  //return next(duc);
+
+  // Return the result of the update operation
+  return next();
 }
+
 
 /**
  * Posts a user's token.
@@ -222,18 +184,20 @@ async function getAllUsersTokens(next) {
  */
 async function dropCollection(next) {
   // verify collection if new cardápio has ben added or not.
-  const toBeVerified = await todosOsCardapio((e) => e);
+  const toBeVerified = await getAllCardapioFromDB((e) => e);
   const isToBeDrop = toBeVerified.length;
 
   // console.log(isToBeDrop);
 
-  if (isToBeDrop > 6) {
+  if (isToBeDrop > 6 || isToBeDrop === 0) {
     // notify all users
     //  await novoCardapioDaSemana();
     // drop collection
     await Cardapio.collection
       .drop()
-      .then((e) => next(true))
+      .then((e) =>{ 
+        console.log(e);
+       return next(e)})
       .catch((err) => console.error(err));
   } else {
     return next(false);
@@ -283,13 +247,12 @@ async function getNews(next) {
 
 module.exports = {
   postCardapio,
-  todosOsCardapio,
+  getAllCardapioFromDB,
   findCardapioByDate,
-  updateCardapio,
+  findOneCardapioByDateAndupdate,
   dropCollection,
   postUsersTokens,
   getAllUsersTokens,
   postNews,
   getNews,
-  updateByDateCardapio,
 };

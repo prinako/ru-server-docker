@@ -1,26 +1,15 @@
 require("dotenv").config();
 
+const express = require("express");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+
 const mongoose = require('mongoose');
 const cron = require("node-cron");
 
-const getFromSiteCardapio = require("./cardapio/getCardapio");
+// import libraries locals
+const {router, newCardapioOftheWeek, update} = require('./main/main.js');
 
-const { isItNeedToNotify, isDataEqual } = require("./lodash/verifyIsEqual");
-const {
-  postCardapio,
-  todosOsCardapio,
-  dropCollection,
-  updateByDateCardapio,
-} = require("./databases/querys");
-
-const {
-  notifyUserCardapioDeHojeMudou,
-  novoCardapioDaSemana,
-} = require("./firebase/push-notification");
-
-const { insertIntoDB, findOneByDate, findAndUpdate } = require("./databases/sqlite");
-
-const { insertIntoVerifyDB, findOneByDateInVerifyDB } = require("./databases/verifyDB");
 
 const clientOptions = { serverApi: { version: '1', strict: true, deprecationErrors: true } };
 
@@ -34,12 +23,23 @@ async function contectDB(next) {
   try {
     // mongoose.set("strictQuery", false);
     const db = await mongoose.connect(process.env.MONGO, clientOptions);
-    console.log("Connected to mongo database" + db.connection.name);
+    console.info("Connected to mongo database " + db.connection.name);
     return next(true);
   } catch (err) {
-    console.log(err);
+    console.error(err);
+    return next(false);
   }
 };
+
+contectDB(async(e) => {
+  if (!e) {
+    console.error("Connection failed");
+    return;
+  }
+  console.info("Connection successful");
+  console.info("################# -< Updating cardapio >- ###############################");
+  await newCardapioOftheWeek();
+});
 
 /**
  * Disconnects from the MongoDB database.
@@ -50,11 +50,23 @@ async function contectDB(next) {
 const disconnetDB = async () => {
   try {
     await mongoose.disconnect();
-    console.log("Disconnected from mongo database");
+    console.info("Disconnected from mongo database");
   } catch (err) {
-    console.log(err);
+    console.error(err);
   }
 };
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
+const port = process.env.PORT || 5000;
+
+
+app.use('/', router);
+
 
 let options = {
   scheduled: true,
@@ -64,7 +76,7 @@ let options = {
 cron.schedule(
   "*/30 9-12 * * 1-2",
   async () => {
-    await main();
+    await newCardapioOftheWeek();
   },
   options
 );
@@ -76,124 +88,16 @@ cron.schedule(
   },
   options
 );
+
 // cron.schedule(
 //   "*/1 * * * * *",
 //   async () => {
 //     await update();
+//     console.log("Updating cardapio");
 //   },
 //   options
 // );
 
-/**
- * Updates the cardápio (menu) and invokes a callback function.
- * 
- * @async
- * @param {Function} callback - The callback function.
- * @returns {Promise<void>} - A promise that resolves when the update is complete.
- */
-async function update() {
-  console.log("Updating cardapio");
-  const dataFromRuSite = await getFromSiteCardapio();
-
-  if(dataFromRuSite === false) {
-    return false;
-  }
-
-  await insertIntoVerifyDB(dataFromRuSite, async (verify) => {
-    if (await verify === true) {
-      const date = new Date();
-      let toDayDate;
-      
-      if (date.getDate().toString().length === 1) {
-        toDayDate = `0${date.getDate() - 1}-0${date.getMonth() + 1
-        }-${date.getFullYear()}`;
-      } else {
-        toDayDate = `${date.getDate() - 1}-${date.getMonth() + 1
-        }-${date.getFullYear()}`;
-      }
-      
-      await findOneByDateInVerifyDB(toDayDate, async (verifyData) => {
-        await findOneByDate(toDayDate, async (oldData) => {
-          
-          // verify if verifyData and oldData are not empty
-          if(verifyData.length === 0 || oldData.length === 0) return;
-          
-          const isEqual = await isDataEqual(oldData, verifyData);
-          
-          if (!isEqual) {
-            // to update
-            await findAndUpdate(toDayDate, verifyData);
-            await findOneByDate(toDayDate, async (newData) => {
-              await contectDB(async (next) => {
-                if (next) {
-                  await updateByDateCardapio(toDayDate, await newData, async (next) => {
-                    await isItNeedToNotify(oldData, newData, async ({ almoco, jantar }) => {
-                      if (almoco || jantar) {
-                        await notifyUserCardapioDeHojeMudou({
-                          almoco,
-                          jantar
-                        });
-                      }
-                    });
-                  });
-                  await disconnetDB();
-                }
-              })
-            });
-          }
-        })
-      });
-    }
-  });
-  return;
-}
-
-main();
-async function main() {
-  const ruSiteData = await getFromSiteCardapio();
-
-  if(ruSiteData === false) {
-    return false;
-  }
-
-  await insertIntoDB(ruSiteData, async (next) => {
-    if (next) {
-      await contectDB(async (next) => {
-        if (next) {
-          await postCardapio(ruSiteData, async (next) => {
-            if (next) {
-              await DBset(ruSiteData);
-            }
-          });
-        }
-        await disconnetDB();
-      });
-    }
-  });
-  return;
-}
-
-/**
- * Sets the database with the given cardapio if the number of cardapios is greater than 6.
- *
- * @async
- * @param {Array} cardapio - The cardapio data to be set in the database.
- * @return {Promise<void>} - A promise that resolves when the database is set.
- */
-async function DBset(cardapio) {
-  const AllCardapio = await todosOsCardapio(async (next) => next);
-  if (AllCardapio.length > 6) {
-    console.log("DB set");
-    await dropCollection(async next => {
-      if (next) {
-        await postCardapio(cardapio, async (next) => {
-          if (next) {
-            console.log("novo cardapio criado");
-            await novoCardapioDaSemana();
-          }
-        });
-      }
-    });
-  }
-  return;
-}
+app.listen(port, () => {
+  console.info(`Server running on port ${port}`);
+});
