@@ -1,4 +1,7 @@
+require("dotenv").config();
+
 const express = require("express");
+const redis = require("redis");
 const router = express.Router();
 
 const isItNeedToNotify = require("../lodash/verifyIsEqual");
@@ -19,8 +22,17 @@ const {
   novoCardapioDaSemana,
 } = require("../firebase/push-notification");
 
+const REDIS_URL = process.env.REDIS_URL;
+const client = redis.createClient(
+  {
+    url: REDIS_URL,
+  }
+);
+client.on("error", (err) => console.log("Redis Client Error", err));
+client.connect().then(() => console.log("connected"));
+
 router.get("/", async (req, res) => {
-  res.status(503).send("Servidor em manutenção");
+  res.status(500);
 });
 
 router.post("/new", async (req, res) => {
@@ -28,28 +40,94 @@ router.post("/new", async (req, res) => {
   res.send("ok");
 });
 
-// get request to get all cardapio from database
-router.get("/api", async (req, res) => {
-  
-  let resolute=[];
+/**
+ * Cache middleware for the API route. Checks if the cache exists, if it does,
+ * sends the cached data, otherwise fetches the data, caches it, and sends it.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ */
+async function apiCache(req, res, next) {
+  const key = await req.path; // Get the path of the request URL
+  const cacheData = await client.get(key); // Get the cache data for the path
 
-  resolute = await getAllCardapioFromDB((doc) => doc);
+  if (cacheData !== null) { // If cache data exists
+    console.log("cache"); // Log 'cache'
+    res.json(JSON.parse(cacheData)); // Send the parsed cache data
+  } else { // If cache data doesn't exist
+    console.log("no cache"); // Log 'no cache'
 
-  if (resolute.length > 6) {
-    const isBeDrop = await dropCollection((e) => e);
+    try {
+      let resolute = []; // Initialize an empty array to store the data
 
-    if (isBeDrop) {
-      await newCardapioOftheWeek();
+      resolute = await getAllCardapioFromDB((doc) => doc); // Fetch the data
+
+      if (resolute.length > 6) { // If the data length is more than 6
+        const isBeDrop = await dropCollection((e) => e); // Drop the collection
+
+        if (isBeDrop) { // If the collection is dropped
+          await newCardapioOftheWeek(); // Create a new cardapio of the week
+        }
+      }
+
+      if (!(resolute.length > 0)) { // If the data length is not more than 0
+        await main(); // Run the main function
+        resolute = await getAllCardapioFromDB((doc) => doc); // Fetch the data again
+      }
+      client.setEx(key, 3600, JSON.stringify(resolute)); // Cache the data
+      res.json(resolute); // Send the data
+    } catch (err) { // If an error occurs
+      res.status(500).send([{ error: err }]); // Send a 500 status with the error
     }
   }
-  if (!(resolute.length > 0)) {
-    await main();
-    resolute = await getAllCardapioFromDB((doc) => doc);
+
+}
+
+/**
+ * Cache middleware for the news route. Checks if the cache exists, if it does,
+ * sends the cached data, otherwise fetches the data, caches it, and sends it.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ */
+async function newsCache(req, res, next) {
+  const key = await req.path;
+  const cacheData = await client.get(key); // Get the cache data for the path
+
+  // If cache data exists
+  if (cacheData !== null) {
+    console.log("cache");
+    res.json(JSON.parse(cacheData)); // Send the parsed cache data
+  } else {
+    console.log("no cache");
+    try {
+      // Fetch the news data
+      const resolute = await getNews((doc) => doc);
+
+      // Cache the data for 1 hour
+      client.setEx(key, 3600, JSON.stringify(resolute));
+
+      // Send the data
+      res.json(resolute);
+    } catch (err) {
+      // If an error occurs, send a 500 status with the error
+      res.status(500).send([{ error: err }]);
+    }
   }
+}
 
-  res.json(resolute);
+// get request to get all cardapio from database
+router.get("/api", apiCache);
+
+// get request to get news
+router.get("/news", newsCache);
+
+// post request to add news
+router.post("/news", async (req, res) => {
+  await postNews(req, res);
 });
-
 
 // post request to add new token of user to database
 router.post("/token", async (req, res) => {
@@ -58,18 +136,6 @@ router.post("/token", async (req, res) => {
   });
   res.send("ok");
 });
-
-// post request to add news
-router.post("/news", async (req, res) => {
-  await postNews(req, res);
-});
-
-// get request to get news
-router.get("/news", async (req, res)=>{
-  const resolute = await getNews((doc)=>doc);
-  res.json(resolute);
-})
-
 
 /**
  * Returns the current date in the format 'DD-MM-YYYY'.
