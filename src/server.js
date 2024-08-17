@@ -78,8 +78,8 @@ let options = {
 cron.schedule(
   "*/30 9-12 * * 1-2",
   async () => {
-    await newCardapioOftheWeek(dropCacheWithKey );
-    // await dropCacheWithKey("cardapio");
+    
+    await newCardapioOftheWeek(dropCacheWithKey);
   },
   options
 );
@@ -87,7 +87,7 @@ cron.schedule(
 cron.schedule(
   "*/20 8-19 * * 1-5",
   async () => {
-    await update();
+    await update(dropCacheWithKey);
   },
   options
 );

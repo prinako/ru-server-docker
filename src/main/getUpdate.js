@@ -24,7 +24,7 @@ const { timestamps } = require("../utils/getTimestamps");
  *
  * @return {Promise<void>} A promise that resolves when the update is complete.
  */
-async function update() {
+async function update(next) {
   console.debug(`> ${ timestamps()} - ${todayDate()}: Checking for updates..`);
   // Get the current date
   const toDayDate = todayDate();
@@ -43,20 +43,24 @@ async function update() {
   // Check if the cardapio has changed and update the database
   await isItNeedToNotify(todayCardapioFromDB, todayCardapioFromSite, async (next) => {
 
-    if (next.almoco.isAlmocoNeed || next.jantar.isJantarNeed) {
-      await findOneCardapioByDateAndupdate(todayCardapioFromSite, (e) => {
-      });
-  
-      // Notify all users that the cardapio has changed
-      await notifyUserCardapioDeHojeMudou({
-        almoco: next.almoco,
-        jantar: next.jantar,
-        nome: next.nomeDaRefei,
-      });
-      console.debug(`> ${timestamps()} - ${toDayDate}: Updates complete.`);
-    }else{
+    // Check if the cardapio has changed
+    if (!next.almoco.isAlmocoNeed || !next.jantar.isJantarNeed) {
       console.debug(`> ${timestamps()} - ${toDayDate}: No need to update.`);
+      return;
     }
+
+    // Update the cardapio data in the database
+    await findOneCardapioByDateAndupdate(todayCardapioFromSite, (e) => {
+    });
+
+    // Notify all users that the cardapio has changed
+    await notifyUserCardapioDeHojeMudou({
+      almoco: next.almoco,
+      jantar: next.jantar,
+      nome: next.nomeDaRefei,
+    });
+    console.debug(`> ${timestamps()} - ${toDayDate}: Updates complete.`);
+    return next('cardapio');
     // Update the cardapio data in the database
   });
 
