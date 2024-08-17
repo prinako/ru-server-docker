@@ -32,7 +32,7 @@ async function postCardapio(newCardapio, next) {
       },
       jantar: { // Dinner menu
         refeicao: "JANTAR", // Type of meal
-        nomeDaRefei: dados.jantar[0], // Name of the dinner menu
+        nomeDaRefeicao: dados.jantar[0], // Name of the dinner menu
         acompanhamento: { // Side dishes
           jan1: dados.jantar[3],
           jan2: dados.jantar[4],
@@ -52,6 +52,7 @@ async function postCardapio(newCardapio, next) {
     await Cardapio.insertMany(newData);
     return next(true);
   } catch (error) {
+    console.error(error);
     // If an error occurs, invoke the callback function with false
     return next(false);
   }
@@ -196,7 +197,6 @@ async function dropCollection(next) {
     await Cardapio.collection
       .drop()
       .then((e) =>{ 
-        console.log(e);
        return next(e)})
       .catch((err) => console.error(err));
   } else {

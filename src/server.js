@@ -3,13 +3,14 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-
 const mongoose = require('mongoose');
 const cron = require("node-cron");
 
 // import libraries locals
-const {router, newCardapioOftheWeek, update} = require('./main/main.js');
-
+const router = require('./main/routers.js');
+const {update} = require('./main/getUpdate.js');
+const {newCardapioOftheWeek} = require('./main/insertNewCardapioOfTheWWeek.js');
+const {dropCacheWithKey} = require('./databases/redisCache.js');
 
 const clientOptions = { serverApi: { version: '1', strict: true, deprecationErrors: true } };
 
@@ -38,7 +39,8 @@ contectDB(async(e) => {
   }
   console.info("Connection successful");
   console.info("################# -< Updating cardapio >- ###############################");
-  await newCardapioOftheWeek();
+  await newCardapioOftheWeek(dropCacheWithKey);
+  // await dropCacheWithKey("cardapio");
 });
 
 /**
@@ -76,7 +78,8 @@ let options = {
 cron.schedule(
   "*/30 9-12 * * 1-2",
   async () => {
-    await newCardapioOftheWeek();
+    await newCardapioOftheWeek(dropCacheWithKey );
+    // await dropCacheWithKey("cardapio");
   },
   options
 );
