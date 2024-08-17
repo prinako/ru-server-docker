@@ -72,4 +72,4 @@ async function newCardapioOftheWeek(next) {
     });
   }
 
-  module.exports = {newCardapioOftheWeek};
+module.exports = {newCardapioOftheWeek};

@@ -149,7 +149,7 @@ async function postUsersTokens(req, next) {
 
   if (isOkToInsect == null) {
     const isToken = new UsersTokens(token);
-    await isToken.save((err, duc) => {
+    await isToken.save().then((err, duc) => {
       if (err) {
         return next(false);
       } else {
