@@ -7,7 +7,7 @@ const {postUsersTokens, postNews} = require("../databases/querys");
 const { newCardapioOftheWeek } = require("../main/insertNewCardapioOfTheWWeek");
 
 router.get("/", async (req, res) => {
-    res.status(500);
+    res.status(200).send("ok");
   });
   
   router.post("/new", async (req, res) => {
