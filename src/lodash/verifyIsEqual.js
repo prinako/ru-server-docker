@@ -1,8 +1,6 @@
 // Importe a função isEqual da biblioteca lodash e
 // a função findCardapioByDate de um módulo de banco de dados.
 const isEqual = require("lodash/isEqual");
-const { findCardapioByDate } = require("../databases/querys");
-
 
 /**
  * Compares the old and new cardapio data and determines if a notification is needed.
@@ -15,17 +13,16 @@ const { findCardapioByDate } = require("../databases/querys");
 async function isItNeedToNotify(oldCardapio, newCardapio, next) {
   // Check if oldCardapio is not null.
   if (oldCardapio != null && newCardapio != null) {
-
     // Compare the nomeDaRefei property of the amoco in oldCardapio and newCardapio.
     const isAlmoco = isEqual(
-      oldCardapio[0].amoco_nomeDaRefei,
-      newCardapio[0].amoco_nomeDaRefei
+      oldCardapio.almoco.nomeDaRefeicao,
+      newCardapio.almoco[0]
     );
 
     // Compare the nomeDaRefei property of the jantar in oldCardapio and newCardapio.
     const isJantar = isEqual(
-      oldCardapio[0].jantar_nomeDaRefei,
-      newCardapio[0].jantar_nomeDaRefei
+      oldCardapio.almoco.nomeDaRefeicao,
+      newCardapio.almoco[0]
     );
 
     // Declare variables to store information about the almoco and jantar.
@@ -35,8 +32,8 @@ async function isItNeedToNotify(oldCardapio, newCardapio, next) {
     // Check if something needs to be done for the almoco.
     if (!isAlmoco) {
       // If it is necessary to do something for the almoco, get the old and new cardapio names.
-      const old =  oldCardapio[0].amoco_nomeDaRefei;
-      const novo = newCardapio[0].amoco_nomeDaRefei;
+      const old =  oldCardapio.almoco.nomeDaRefeicao
+      const novo = newCardapio.almoco[0]
 
       // Create the almoco object with information about the almoco.
       almoco = {
@@ -53,8 +50,8 @@ async function isItNeedToNotify(oldCardapio, newCardapio, next) {
 
     // Repeat the same process for the jantar.
     if (!isJantar) {
-      const old = oldCardapio[0].jantar_nomeDaRefei;
-      const novo = newCardapio[0].jantar_nomeDaRefei;
+      const old =  oldCardapio.almoco.nomeDaRefeicao
+      const novo = newCardapio.almoco[0]
 
       jantar = {
         isJantarNeed: true, // Indicates that something needs to be done for the jantar.
@@ -73,17 +70,6 @@ async function isItNeedToNotify(oldCardapio, newCardapio, next) {
   }
 }
 
-/**
- * Compares two sets of data and returns a boolean indicating if they are equal.
- *
- * @param {Object} dataFromDB - The data retrieved from the database.
- * @param {Object} dataFromRuSite - The data retrieved from the ru site.
- * @return {Promise<boolean>} A boolean indicating if the data is equal.
- */
-async function isDataEqual(dataFromDB, dataFromRuSite) {
-  // Use the lodash isEqual function to compare the two sets of data.
-  return isEqual(dataFromDB, dataFromRuSite);
-}
 
 // Exporte a função isItNeedToNotify para uso em outros módulos.
-module.exports = { isItNeedToNotify, isDataEqual };
+module.exports = isItNeedToNotify ;

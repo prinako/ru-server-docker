@@ -13,15 +13,15 @@ const cadapioSchema = new Schema(
       require: true,
       unique: true,
     },
-    amoco: {
+    almoco: {
       refeicao: {
         type: String,
         require: true,
       },
-      nomeDaRefei: {
+      nomeDaRefeicao: {
         type: String,
       },
-      ingredintes: {
+      acompanhamento: {
         amo1: {
           type: String,
         },
@@ -38,7 +38,7 @@ const cadapioSchema = new Schema(
           type: String,
         },
       },
-      vegetariano1: {
+      vegetarianoAlmoco: {
         type: String,
       },
     },
@@ -47,10 +47,10 @@ const cadapioSchema = new Schema(
         type: String,
         require: true,
       },
-      nomeDaRefei: {
+      nomeDaRefeicao: {
         type: String,
       },
-      ingredintes: {
+      acompanhamento: {
         jan1: {
           type: String,
         },
@@ -67,7 +67,7 @@ const cadapioSchema = new Schema(
           type: String,
         },
       },
-      vegetariano2: {
+      vegetarianoAlmoco: {
         type: String,
       },
     },
@@ -76,6 +76,7 @@ const cadapioSchema = new Schema(
   //   timestamps: true,
   // }
 );
+
 
 const postUsersTokens = new Schema(
   {
