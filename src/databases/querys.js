@@ -40,7 +40,7 @@ async function postCardapio(newCardapio, next) {
           jan4: dados.jantar[6],
           jan5: dados.jantar[7],
         },
-        vegetarianoAlmoco: dados.jantar[2], // Vegetarian option for dinner
+        vegetarianoJantar: dados.jantar[2], // Vegetarian option for dinner
       },
     });
     // Add the new cardápio object to the newData array
@@ -119,7 +119,7 @@ async function findOneCardapioByDateAndupdate(cadapioUpdate, next) {
         jan4: cadapioUpdate.jantar[6],
         jan5: cadapioUpdate.jantar[7],
       },
-      vegetarianoAlmoco: cadapioUpdate.jantar[2], // Vegetarian option for dinner
+      vegetarianoJantar: cadapioUpdate.jantar[2], // Vegetarian option for dinner
     },
   };
 

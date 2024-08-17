@@ -67,7 +67,7 @@ const cadapioSchema = new Schema(
           type: String,
         },
       },
-      vegetarianoAlmoco: {
+      vegetarianoJantar: {
         type: String,
       },
     },
