@@ -4,7 +4,7 @@ const router = express.Router();
 const { apiCache, newsCache} = require("../databases/redisCache");
 
 const {postUsersTokens, postNews} = require("../databases/querys");
-const { newCardapioOftheWeek } = require("../main/insertNewCardapioOfTheWWeek");
+// const { newCardapioOftheWeek } = require("../main/insertNewCardapioOfTheWeek");
 
 router.get("/", async (req, res) => {
     res.status(200).send("ok");

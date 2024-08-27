@@ -1,18 +1,14 @@
 const isItNeedToNotify = require("../lodash/verifyIsEqual");
 const {
-  postCardapio,
-  getAllCardapioFromDB,
-  dropCollection,
   findOneCardapioByDateAndupdate,
   findCardapioByDate,
 } = require("../databases/querys");
 
 
-const { getNewCardapioFromSite, getTodayCardapio } = require("../cardapio/getCardapio");
-const {
-  notifyUserCardapioDeHojeMudou,
-  novoCardapioDaSemana,
-} = require("../firebase/push-notification");
+const {  getTodayCardapio } = require("../cardapio/getCardapio");
+const {notifyUserCardapioDeHojeMudou} = require("../firebase/push-notification");
+
+const { newCardapioOftheWeek } = require("./insertNewCardapioOfTheWeek");
 
 const { todayDate } = require("../utils/getTodayDate");
 const { timestamps } = require("../utils/getTimestamps");
@@ -37,14 +33,18 @@ async function update(next) {
   
   // If the cardapio data is not available, return
   if (todayCardapioFromSite === null || todayCardapioFromDB === null) {
+    console.debug(`> ${timestamps()} - ${toDayDate}: Cardapio  not available. Skipping update.`);
+    await newCardapioOftheWeek((next) => next);
     return;
   }
 
   // Check if the cardapio has changed and update the database
   await isItNeedToNotify(todayCardapioFromDB, todayCardapioFromSite, async (next) => {
 
+    // console.debug(next);
+
     // Check if the cardapio has changed
-    if (!next.almoco.isAlmocoNeed || !next.jantar.isJantarNeed) {
+    if (!next.almoco.isAlmocoNeed && !next.jantar.isJantarNeed) {
       console.debug(`> ${timestamps()} - ${toDayDate}: No need to update.`);
       return;
     }

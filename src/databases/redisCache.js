@@ -6,7 +6,7 @@ const {
     dropCollection
 } = require("./querys");
 
-const {newCardapioOftheWeek} = require("../main/insertNewCardapioOfTheWWeek");
+const {newCardapioOftheWeek} = require("../main/insertNewCardapioOfTheWeek");
 
 const REDIS_URL = process.env.REDIS_URL;
 
