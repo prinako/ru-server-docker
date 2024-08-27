@@ -111,7 +111,7 @@ async function findOneCardapioByDateAndupdate(cadapioUpdate, next) {
     },
     jantar: { // Dinner menu
       refeicao: "JANTAR", // Type of meal
-      nomeDaRefei: cadapioUpdate.jantar[0], // Name of the dinner menu
+      nomeDaRefeicao: cadapioUpdate.jantar[0], // Name of the dinner menu
       acompanhamento: { // Side dishes
         jan1: cadapioUpdate.jantar[3],
         jan2: cadapioUpdate.jantar[4],
@@ -124,11 +124,11 @@ async function findOneCardapioByDateAndupdate(cadapioUpdate, next) {
   };
 
   // Find and update the cardápio by date
-  await Cardapio.findOneAndUpdate(
+ const result = await Cardapio.findOneAndUpdate(
     { data: cadapioUpdate.dia[1] }, // The date to search for
     toUpdate, // The update object
-    { upsert: true }, // Create a new document if the date doesn't exist
-  ).clone();
+    { upsert: true, new: true, includeResultMetadatas: true }, // Create a new document if the date doesn't exist
+  );
 
   // Return the result of the update operation
   return next();
