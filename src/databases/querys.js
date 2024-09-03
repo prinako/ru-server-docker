@@ -186,22 +186,12 @@ async function getAllUsersTokens(next) {
 async function dropCollection(next) {
   // verify collection if new cardápio has ben added or not.
   const toBeVerified = await getAllCardapioFromDB((e) => e);
-  const isToBeDrop = toBeVerified.length;
 
-  // console.log(isToBeDrop);
-
-  if (isToBeDrop > 6 || isToBeDrop === 0) {
-    // notify all users
-    //  await novoCardapioDaSemana();
-    // drop collection
-    await Cardapio.collection
-      .drop()
-      .then((e) =>{ 
-       return next(e)})
-      .catch((err) => console.error(err));
-  } else {
-    return next(false);
-  }
+  // drop collection
+  await Cardapio.collection
+    .drop()
+    .then((e) =>next(e))
+    .catch((err) => console.error(err));
 }
 
 /**
