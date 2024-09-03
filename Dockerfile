@@ -36,4 +36,4 @@ COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app ./
 
 # Set the default command to run the application
-CMD [ "node", "src/server.js" ]
+CMD [ "node", "/opt/node_app/src/server.js" ]
