@@ -1,4 +1,4 @@
-const isItNeedToNotify = require("../lodash/verifyIsEqual");
+const { isCardapioDataIsEqual } = require("../lodash/verifyDateIsEqual");
 
 const {
     postCardapio,
@@ -6,48 +6,43 @@ const {
     dropCollection,
   } = require("../databases/querys");
   
-
 const { getNewCardapioFromSite } = require("../cardapio/getCardapio");
 const {novoCardapioDaSemana} = require("../firebase/push-notification");
 
-const { todayDate, dataOfTheWeek } = require("../utils/getTodayDate");
+const { todayDate} = require("../utils/getTodayDate");
 const { timestamps } = require("../utils/getTimestamps");
 
+
 /**
- * Checks if the new cardapio of the week needs to be posted and notifies all users.
+ * Asynchronously checks if the new cardapio of the week needs to be posted and notifies all users.
  * 
  * @async
+ * @param {Function} next - The callback function.
  * @returns {Promise<void>} - A promise that resolves when the new cardapio is posted and all users are notified.
  */
 async function newCardapioOftheWeek(next) {
   console.info(`> ${timestamps()} - ${todayDate()}: Checking for new cardapio of the week...`);
+
   // Get the current date in the format 'DD-MM-YYYY'
   const toDay = todayDate();
 
   // Get all cardapios from the database
   const oldCardapio = await getAllCardapioFromDB((doc) => doc);
 
-  // get date of the week
-  const dateOfTheWeek = dataOfTheWeek();
-
-  let isAlreadyInTheDatabase = 0;
-  // Check if the current date is in the cardapios
+  // Extract the dates from the cardapios in the database
+  let dateOfCardapioFromDatabase = [];
   oldCardapio.some((cardapio, index) => {
     // Check if the current date is in the cardapios
-    if (cardapio.data === dateOfTheWeek[index]) {
-      isAlreadyInTheDatabase++;
-    }
+    dateOfCardapioFromDatabase.push(cardapio.data);
   });
 
   // Get the new cardapio from the site
   const newCardapio = await getNewCardapioFromSite();
 
-  // Check if the new cardapio already exists
-  let isNewCardapioFromSite = 0;
+  // Extract the dates from the new cardapio
+  let CardapioDateFromSite = [];
   newCardapio.some((newC, index) => {
-    if (newC.dia[0] in dateOfTheWeek) {
-      isNewCardapioFromSite++;
-    }
+    CardapioDateFromSite.push(newC.dia[1]);
   });
 
   // Check if the current date is in the cardapios and if the number of cardapios is greater than 5
@@ -61,10 +56,12 @@ async function newCardapioOftheWeek(next) {
   }
 
   // Check if the new cardapio already exists
-  if (isAlreadyInTheDatabase >= 4 && isNewCardapioFromSite === 0) {
+  const isNewCardapioFromSite = isCardapioDataIsEqual(dateOfCardapioFromDatabase, CardapioDateFromSite);
+  if (!isNewCardapioFromSite) {
       console.info(`> ${timestamps()} - ${todayDate()}: Not need to do anything, all is ok.`);
       return
   }
+
   // Drop the collection and post the new cardapio
   await dropCollection(async (e) =>{
     if (!e) {
