@@ -3,7 +3,7 @@
 # It copies the necessary files and installs the dependencies.
 FROM node:20-alpine AS build
 
-LABEL org.opencontainers.image.description ru-server-new-docker
+LABEL org.opencontainers.image.description=ru-server-new-docker
 
 # Set the working directory
 WORKDIR /app
@@ -19,7 +19,7 @@ RUN npm install --omit=dev
 # It sets the timezone and exposes the DB volume.
 FROM node:20-alpine
 
-LABEL org.opencontainers.image.description ru-server-new-docker
+LABEL org.opencontainers.image.description = ru-server-new-docker
 
 # Install the tzdata package
 # Timezone setup (optimized)
