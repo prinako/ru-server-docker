@@ -1,1 +1,1 @@
-# ru-server-new
+# ru-server-newd
